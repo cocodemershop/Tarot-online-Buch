@@ -1,5 +1,5 @@
-/* Kartenreich Buch: offline lesbar. Bei Änderungen VERSION hochzählen. */
-const VERSION = 'kr-buch-v2';
+﻿/* Kartenreich Buch: offline lesbar. Bei Ã„nderungen VERSION hochzÃ¤hlen. */
+const VERSION = 'kr-buch-v3';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
   './data-arkana.js', './data-staebe.js', './data-kelche.js', './data-schwerter.js', './data-muenzen.js',
