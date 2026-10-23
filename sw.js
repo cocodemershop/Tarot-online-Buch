@@ -1,7 +1,8 @@
-﻿/* Kartenreich Buch: offline lesbar. Bei Ã„nderungen VERSION hochzÃ¤hlen. */
-const VERSION = 'kr-buch-v3';
+﻿/* Kartenreich Buch: offline lesbar. Bei Änderungen VERSION hochzählen. */
+const VERSION = 'kr-buch-v5';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
+  './page-flip.browser.js',
   './data-arkana.js', './data-staebe.js', './data-kelche.js', './data-schwerter.js', './data-muenzen.js',
   './img/logo.webp', './img/rueckseite.webp',
   './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'

@@ -495,7 +495,8 @@ label.chk input{accent-color:var(--gold);width:18px;height:18px}
   <p style="font-family:var(--f-d);font-size:1.4em;color:var(--gold2);margin-top:.8em">Frank Zimmermann</p>
 </template>
 
-<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script src="page-flip.browser.js"></script>
+<script>if(!window.St)document.write('<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"><\/script>')</script>
 <script src="data-arkana.js"></script>
 <script src="data-staebe.js"></script>
 <script src="data-kelche.js"></script>
@@ -589,12 +590,12 @@ var Sound=(function(){
 })();
 
 /* ===================== Seiten bauen ===================== */
-var book=$('#book'),measure=$('#measure'),mode='spread',PW=0,PH=0,pages=[],keyPage={},cur=0,slotL,slotR;
+var book=$('#book'),measure=$('#measure'),mode='spread',PW=0,PH=0,psc=1,pages=[],keyPage={},cur=0,slotL,slotR;
 var STAR='<svg viewBox="0 0 100 100" fill="none" stroke="#a8843a" stroke-width="1"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38" stroke-dasharray="1 3"/><path d="M50 6l6 38 38 6-38 6-6 38-6-38-38-6 38-6z" fill="rgba(168,132,58,.18)"/><circle cx="50" cy="50" r="4" fill="#a8843a"/></svg>';
 
 function tplBlocks(id){var t=document.getElementById(id);return Array.prototype.map.call(t.content.children,function(e){return e.outerHTML})}
 function cardNr(c,major){if(major)return 'Große Arkana · '+c.nr;if(c.nr==='Ass')return 'Ass';if(/^[IVX]+$/.test(c.nr))return 'Zahlenkarte · '+c.nr;return 'Hofkarte · '+c.nr}
-function artHTML(sec){var c=sec.c;return '<p class="ey">'+cardNr(c,sec.major)+'</p><div class="cardimg"><img src="cards/'+c.id+'.jpg" alt="'+esc(c.name)+'" width="480" height="823" decoding="async"></div><div class="nm">'+esc(c.name)+'</div><div class="wd">Auf der Karte · <i>'+esc(c.wort)+'</i></div><div class="see"><b>Was du siehst</b>'+esc(c.bild)+'</div>'}
+function artHTML(sec){var c=sec.c;return '<p class="ey">'+cardNr(c,sec.major)+'</p><div class="cardimg"><img src="cards/'+c.id+'.jpg" alt="'+esc(c.name)+'" width="480" height="823" loading="lazy" decoding="async"></div><div class="nm">'+esc(c.name)+'</div><div class="wd">Auf der Karte · <i>'+esc(c.wort)+'</i></div><div class="see"><b>Was du siehst</b>'+esc(c.bild)+'</div>'}
 function ctBlocks(sec){var c=sec.c,b=[];
   b.push('<div><p class="ey eyc" style="--c:'+sec.col+';color:'+sec.col+'">'+cardNr(c,sec.major)+'</p><div class="nmh">'+esc(c.name)+'</div></div>');
   b.push('<div><h4>Was sie erzählt</h4><p>'+esc(c.kern)+'</p></div>');
@@ -718,12 +719,19 @@ function buildBook(start){
   var lastCur=cur;
   PF.on('flip',function(e){var dir=e.data>lastCur?1:-1;lastCur=e.data;cur=e.data;ui();
     var r=book.getBoundingClientRect();Dust.edge(dir>0?r.left+(mode==='spread'?r.width*.06:r.width*.04):r.right-r.width*.06,r.top+r.height*.08,r.bottom-r.height*.08)});
-  PF.on('changeState',function(e){if(e.data==='flipping')Sound.swish();Float.hold(e.data!=='read')});
+  pfState='read';queued=0;
+  PF.on('changeState',function(e){pfState=e.data;if(e.data==='flipping')Sound.swish();Float.hold(e.data!=='read');
+    if(e.data==='read'&&queued){var d=queued>0?1:-1;queued-=d;setTimeout(function(){go(d)},40)}});
   var items=root.querySelectorAll('.page');
   (PF.loadFromHTML||PF.loadFromHtml).call(PF,items);
   ui()}
+var pfState='read',queued=0;
 function go(dir){
-  if(PF){if(dir>0)PF.flipNext('bottom');else PF.flipPrev('bottom');return}
+  if(PF){
+    /* Klicks während einer Blätterbewegung merken und danach ausführen */
+    if(pfState!=='read'){queued=Math.max(-4,Math.min(4,queued+dir));return}
+    var v=visibleIdx();if((dir>0&&v[v.length-1]>=pages.length-1)||(dir<0&&v[0]<=0))return;
+    if(dir>0)PF.flipNext('bottom');else PF.flipPrev('bottom');return}
   var v=visibleIdx(),t;
   if(mode==='single')t=cur+dir;else t=dir>0?(v[0]===0?1:v[0]+2):(v[0]<=1?0:v[0]-2);
   if(t<0||t>pages.length-1)return;cur=t;Sound.swish();renderStatic();ui()}
@@ -802,6 +810,10 @@ function layout(){var bar=$('.bar').offsetHeight,ctrl=$('.ctrl').offsetHeight,vw
   var minW=spread?400:320,minH=spread?572:500,sc=1;
   if(W<minW||H<minH){var k=Math.max(minW/W,minH/H);W*=k;H*=k;sc=Math.max(.2,Math.min(availH/H,(spread?availW/2:availW)/W,1))}
   W=Math.floor(W);H=Math.floor(H);
+  /* Kleine Höhenänderungen (Adressleiste am Handy) nur durch Skalieren ausgleichen, nicht neu umbrechen */
+  var nm=spread?'spread':'single';
+  if(PW&&nm===mode&&Math.abs(W*sc-PW*psc)<=10&&Math.abs(H*sc-PH*psc)<=90){W=PW;H=PH;sc=Math.max(.2,Math.min(availH/H,(spread?availW/2:availW)/W,1))}
+  psc=sc;
   $('#float').style.transform='translate(-50%,-50%)'+(sc<1?' scale('+sc.toFixed(3)+')':'');
   $('#tilt').classList.toggle('single',!spread);
   var fs=spread?W*.0335:Math.max(14.5,W*.044);
@@ -820,7 +832,7 @@ function buildToc(){$('#chaps').innerHTML=CHAPS.map(function(c){return '<button 
   var h='<p class="grp">Große Arkana</p><div class="thumbs">'+KR.arkana.map(th).join('')+'</div>';
   SUITS.forEach(function(s){h+='<p class="grp">'+s.name+'</p><div class="thumbs">'+s.karten.map(th).join('')+'</div>'});
   $('#thumbs').innerHTML=h;
-  function th(c){return '<button type="button" data-go="'+c.id+'"><img src="cards/t/'+c.id+'.webp" alt="" loading="lazy" decoding="async">'+esc(c.name)+'</button>'}}
+  function th(c){return '<button type="button" data-go="'+c.id+'"><img src="cards/'+c.id+'.jpg" alt="" loading="lazy" decoding="async">'+esc(c.name)+'</button>'}}
 function openOv(id){var o=$(id);o.hidden=false;var b=o.querySelector('.x');if(b)b.focus()}
 function closeOv(o){o.hidden=true}
 document.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g){var o=g.closest('.ov');if(o)closeOv(o);gotoIdx(keyPage[g.dataset.go],true);return}
