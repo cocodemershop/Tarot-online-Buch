@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kartenreich · Das Buch zum Blättern</title>
+<meta name="description" content="Das Kartenreich-Buch zum Durchblättern: alle 78 Karten mit Bild, Bedeutung und ihrer Frage. Mit Klangraum und Feenstaub.">
+<meta name="theme-color" content="#120c1f">
+<link rel="icon" href="icons/favicon-48.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kartenreich Buch">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Kartenreich · Blätterbuch. Nachthimmel als Raum, das Buch als Doppelseite (PC) oder Einzelseite (Handy). */
+:root{
+  --sky:#0d0818; --sky2:#1b1233;
+  --paper:#1e1533; --paper2:#170f29;
+  --ink:#eee5f3; --mist:#b3a6c6; --line:rgba(214,180,108,.28);
+  --gold:#d9b86c; --gold2:#f1d595;
+  --fire:#e88a45; --water:#6aa8da; --air:#a3a7ea; --earth:#97c680;
+  --f-d:"Cormorant Garamond",Garamond,"Times New Roman",serif;
+  --f-b:"Lora",Georgia,"Times New Roman",serif;
+  --pw:460px; --ph:657px; --fs:15px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--sky);color:var(--ink);font-family:var(--f-b);overflow:hidden;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(ellipse at 50% 40%,#2a1c4d 0%,#160e2a 45%,var(--sky) 100%)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:4px}
+#dustBack,#dustFront{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
+#dustBack{z-index:0}#dustFront{z-index:30}
+
+/* Kopfleiste und Steuerung */
+#app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:auto 1fr auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.bar{display:flex;align-items:center;gap:.6rem;padding:.7rem max(14px,env(safe-area-inset-right,0px)) .5rem max(14px,env(safe-area-inset-left,0px))}
+.brand{display:flex;align-items:center;gap:.55rem;font-family:var(--f-d);font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-size:1rem;margin-right:auto;white-space:nowrap}
+.brand img{width:26px;height:auto}
+.tb{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .8rem;border:1px solid var(--line);border-radius:999px;font-size:.85rem;color:var(--ink);background:rgba(20,12,37,.55);backdrop-filter:blur(6px);transition:border-color .2s,background .2s}
+.tb:hover{border-color:var(--gold);background:rgba(40,26,70,.7)}
+.tb svg{width:16px;height:16px}
+.tb[aria-pressed="true"]{border-color:var(--gold);color:var(--gold2)}
+@media (max-width:560px){.tb .lbl{display:none}.tb{padding:.5rem .6rem}.brand span{display:none}}
+#stage{position:relative;overflow:visible;perspective:2800px;min-height:0;touch-action:pan-y;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+/* Schwebendes Buch: Mitte der Bühne, Perspektive, Schatten am Boden */
+#float{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);perspective:2400px;transform-style:preserve-3d}
+#fly,#tilt{position:relative;transform-style:preserve-3d}
+#tilt{will-change:transform}
+#ground{position:absolute;left:50%;bottom:-54px;width:82%;height:44px;transform:translateX(-50%);border-radius:50%;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,.6) 0%,rgba(0,0,0,.25) 45%,rgba(0,0,0,0) 72%);filter:blur(7px);pointer-events:none}
+#book{position:relative;width:calc(var(--pw)*2);height:var(--ph);transform-style:preserve-3d}
+/* Buchdicke als echte 3D-Flächen: Einbandkante und Seitenstapel */
+.edge{position:absolute;pointer-events:none;backface-visibility:hidden}
+.edge.b{left:-18px;right:-18px;top:calc(100% + 18px);height:18px;transform-origin:50% 0;transform:rotateX(-90deg);
+  background:linear-gradient(#1c1033,#1c1033) top/100% 3px no-repeat,linear-gradient(#1c1033,#1c1033) bottom/100% 3px no-repeat,
+  repeating-linear-gradient(to bottom,#f3ead6 0 1.3px,#d3c4a6 1.3px 2.6px);border-radius:2px}
+.edge.r{top:-14px;bottom:-18px;left:calc(100% + 18px);width:18px;transform-origin:0 50%;transform:rotateY(90deg);
+  background:linear-gradient(90deg,#1c1033,#1c1033) left/3px 100% no-repeat,linear-gradient(90deg,#1c1033,#1c1033) right/3px 100% no-repeat,
+  repeating-linear-gradient(90deg,#f3ead6 0 1.3px,#d3c4a6 1.3px 2.6px)}
+.edge.l{top:-14px;bottom:-18px;right:calc(100% + 18px);width:18px;transform-origin:100% 50%;transform:rotateY(-90deg);
+  background:linear-gradient(90deg,#1c1033,#1c1033) left/3px 100% no-repeat,linear-gradient(90deg,#1c1033,#1c1033) right/3px 100% no-repeat,
+  repeating-linear-gradient(90deg,#f3ead6 0 1.3px,#d3c4a6 1.3px 2.6px)}
+#tilt.closed .edge.b{left:calc(50% - 6px)}#tilt.closed .edge.l{right:calc(50% + 6px)}
+#tilt.single .edge.b{left:-10px;right:-14px}
+/* Weicher Lichtschimmer, der mit der Neigung wandert */
+.sheen{position:absolute;inset:0;pointer-events:none;z-index:20;opacity:0;mix-blend-mode:soft-light;
+  background:linear-gradient(105deg,rgba(255,255,255,0) 30%,rgba(255,250,235,.55) 48%,rgba(255,255,255,0) 66%);background-size:250% 100%}
+#tilt.closed .sheen{left:50%}
+/* Lesebändchen am Buchrücken */
+.ribbon{position:absolute;left:calc(var(--pw) + 22px);top:calc(100% - 30px);width:15px;height:96px;transform-origin:50% 0;
+  background:linear-gradient(90deg,#3b1f63 0%,#5b318f 45%,#3b1f63 100%);box-shadow:inset 1px 0 0 rgba(217,184,108,.7),inset -1px 0 0 rgba(217,184,108,.7),0 6px 10px rgba(0,0,0,.35);
+  clip-path:polygon(0 0,100% 0,100% 100%,50% 84%,0 100%);animation:sway 7s ease-in-out infinite}
+#book.single~.ribbon,#tilt.single .ribbon{left:72%}
+@keyframes sway{0%,100%{transform:rotate(-2.2deg)}50%{transform:rotate(2.4deg)}}
+@media (prefers-reduced-motion:reduce){.ribbon{animation:none}}
+#book.single{width:var(--pw)}
+/* Fester Einband, der rundum unter den Seiten hervorsteht */
+.board{position:absolute;inset:-14px -18px -18px -18px;border-radius:10px;pointer-events:none;
+  background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.06),transparent 60%),linear-gradient(135deg,#2e1d52 0%,#21143d 50%,#170d2c 100%);
+  box-shadow:0 34px 80px rgba(0,0,0,.65),0 0 0 1px rgba(0,0,0,.4),inset 0 0 0 1px rgba(217,184,108,.45),inset 0 0 0 6px #241542,inset 0 0 0 7px rgba(217,184,108,.25)}
+#tilt.closed .board{left:calc(var(--pw) - 6px)}
+#tilt.closedR .board{right:calc(var(--pw) - 6px)}
+#tilt.single .board{inset:-12px -14px -16px -10px}
+#book{transform-style:flat}
+/* StPageFlip Grundstile */
+#pf{position:relative}
+.stf__parent{position:relative;display:block;box-sizing:border-box;transform:translateZ(0);touch-action:pan-y}
+.stf__wrapper{position:relative;width:100%;box-sizing:border-box}
+.stf__parent canvas{position:absolute;width:100%;height:100%;left:0;top:0}
+.stf__block{position:absolute;width:100%;height:100%;box-sizing:border-box;perspective:2000px}
+.stf__item{display:none;position:absolute;transform-style:preserve-3d}
+#pf .page.stf__item{position:absolute;width:var(--pw);height:var(--ph)}
+.stf__outerShadow,.stf__innerShadow,.stf__hardShadow,.stf__hardInnerShadow{position:absolute;left:0;top:0;pointer-events:none}
+/* Zoom */
+.ov.zoom{display:block;padding:0;background:rgba(10,6,20,.94)}
+.ov.zoom[hidden]{display:none}
+.zbar{position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:.6rem;padding:.35rem .6rem;border:1px solid var(--line);border-radius:999px;background:rgba(20,12,37,.85)}
+#zPct{min-width:4.2em;text-align:center;font-variant-numeric:tabular-nums;color:var(--gold2);font-size:.9rem}
+.zbar .x{float:none;padding:0;font-size:1rem}
+#zArea{position:absolute;inset:66px 0 0 0;overflow:auto;cursor:grab;touch-action:pan-x pan-y;padding:0 12px 24px}
+#zSizer{position:relative;margin:0 auto}
+#zInner{position:absolute;left:0;top:0;transform-origin:0 0;display:flex}
+#zInner .page{width:var(--pw);height:var(--ph);flex:none}
+.zside{position:absolute;top:50%;z-index:3;width:52px;height:52px;transform:translateY(-50%);background:rgba(20,12,37,.8)}
+.zside.l{left:max(10px,env(safe-area-inset-left,0px))}.zside.r{right:max(10px,env(safe-area-inset-right,0px))}
+#zPn{position:absolute;bottom:max(10px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:3;font-size:.8rem;color:var(--mist);background:rgba(20,12,37,.8);padding:.25rem .8rem;border-radius:999px;font-variant-numeric:tabular-nums}
+.slot{position:absolute;top:0;width:var(--pw);height:var(--ph)}
+.slot.l{left:0}.slot.r{left:var(--pw)}
+#book.single .slot.r{left:0}
+.slot:empty{display:none}
+.ctrl{display:flex;align-items:center;justify-content:center;gap:.9rem;padding:.3rem max(14px,env(safe-area-inset-right,0px)) .55rem max(14px,env(safe-area-inset-left,0px));user-select:none;-webkit-user-select:none}
+.nav{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold);background:rgba(20,12,37,.55);transition:transform .2s,border-color .2s}
+.nav:hover:not(:disabled){border-color:var(--gold);transform:scale(1.06)}
+.nav:disabled{opacity:.3;cursor:default}
+.nav svg{width:20px;height:20px}
+.seekwrap{display:grid;gap:.25rem;width:min(420px,52vw)}
+#seek{width:100%;accent-color:var(--gold);height:18px}
+#pnum{font-size:.78rem;color:var(--mist);text-align:center;font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+/* Seiten */
+/* Papier: innerhalb der Seite gelten helle Farben, alle Regeln darunter erben sie */
+.page{--ink:#2b2134;--mist:#6b5e74;--gold:#8f6b27;--gold2:#4f3477;--line:rgba(143,107,39,.3);--paper:#fbf6ea;--paper2:#efe5cf;
+  --fire:#b0531a;--water:#2c6a9c;--air:#5459a8;--earth:#477a31;
+  position:relative;width:100%;height:100%;overflow:hidden;font-size:var(--fs);line-height:1.6;color:var(--ink);
+  background:radial-gradient(ellipse at 50% 38%,var(--paper) 0%,#f4ecda 62%,var(--paper2) 100%);padding:3.3em 2.4em 2.9em}
+.page::before{content:"";position:absolute;inset:.9em;border:1px solid var(--line);border-radius:2px;pointer-events:none}
+.page.left{border-radius:6px 0 0 6px;box-shadow:inset -34px 0 34px -22px rgba(90,62,20,.38),-1px 1px 0 #e9dfc8,-2px 2px 0 #d8cab0,-3px 3px 0 #e9dfc8,-4px 4px 0 #cfbf9f,-5px 5px 0 #e3d7bd}
+.page.right{border-radius:0 6px 6px 0;box-shadow:inset 34px 0 34px -22px rgba(90,62,20,.38),1px 1px 0 #e9dfc8,2px 2px 0 #d8cab0,3px 3px 0 #e9dfc8,4px 4px 0 #cfbf9f,5px 5px 0 #e3d7bd}
+.page.single{border-radius:6px;box-shadow:inset 18px 0 22px -16px rgba(90,62,20,.35),1px 1px 0 #e9dfc8,2px 2px 0 #d8cab0,3px 3px 0 #e9dfc8,4px 4px 0 #cfbf9f}
+.page.blank{background:linear-gradient(90deg,#efe6d2,#f6efe0)}
+.page.cover,.page.backc{--ink:#eee5f3;--mist:#b3a6c6;--gold:#d9b86c;--gold2:#f1d595;--line:rgba(214,180,108,.32)}
+.page.cover.right,.page.backc.left,.page.backc.right,.page.cover.single,.page.backc.single{box-shadow:inset 18px 0 26px -18px rgba(0,0,0,.6)}
+.page.blank::before{display:none}
+.pc{position:relative;height:100%;overflow:hidden}
+.rh{position:absolute;top:1.75em;left:0;right:0;text-align:center;font-family:var(--f-d);font-size:.72em;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);opacity:.8}
+.pn{position:absolute;bottom:1.45em;left:0;right:0;text-align:center;font-family:var(--f-d);font-size:.85em;color:var(--mist);font-variant-numeric:tabular-nums}
+.page h2{font-family:var(--f-d);font-weight:600;font-size:2.15em;line-height:1.08;margin:.15em 0 .35em;color:var(--ink);text-wrap:balance}
+.page h3{font-family:var(--f-d);font-weight:600;font-size:1.4em;line-height:1.15;margin:.7em 0 .3em;color:var(--gold2)}
+.page p{margin:0 0 .7em;hyphens:auto;-webkit-hyphens:auto}
+.page ul,.page ol{margin:0 0 .7em 1.1em}
+.page li{margin-bottom:.3em;hyphens:auto}
+.page strong{font-weight:600;color:var(--gold2)}
+.page em,.page i{font-style:italic}
+.ey{font-family:var(--f-d);font-weight:600;font-size:.78em;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:.3em}
+.sub{font-style:italic;color:var(--mist);margin-bottom:1em}
+.drop::first-letter{font-family:var(--f-d);font-weight:700;color:var(--gold);float:left;font-size:3.6em;line-height:.8;padding:.05em .08em 0 0}
+.note{border-left:2px solid var(--gold);padding-left:.8em;color:var(--mist);font-style:italic}
+.q{font-family:var(--f-d);font-style:italic;font-size:1.45em;line-height:1.25;color:var(--gold2);margin-top:.6em}
+.facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:.4em 0 1em}
+.facts div{background:var(--paper2);padding:.55em .7em;font-size:.85em;color:var(--mist);line-height:1.35}
+.facts b{display:block;font-family:var(--f-d);font-size:2em;line-height:1;color:var(--gold);font-weight:600}
+.suits{display:grid;grid-template-columns:1fr 1fr;gap:.8em;margin:.3em 0 1em}
+.suit{border-top:2px solid var(--c);padding-top:.35em;font-size:.88em;color:var(--mist);line-height:1.35}
+.suit b{display:block;font-family:var(--f-d);font-size:1.35em;color:var(--ink);font-weight:600}
+.suit span{font-family:var(--f-d);font-size:.8em;letter-spacing:.2em;text-transform:uppercase;color:var(--c);font-weight:600}
+.steps{list-style:none;margin:.3em 0 .8em;counter-reset:s}
+.steps li{display:grid;grid-template-columns:1.6em 1fr;gap:.5em;margin-bottom:.55em}
+.steps li::before{counter-increment:s;content:counter(s);font-family:var(--f-d);font-size:1.6em;line-height:1;color:var(--gold);font-weight:600}
+.steps b{font-family:var(--f-d);font-size:1.15em;color:var(--gold2)}
+.toc{list-style:none;margin:.6em 0 0}
+.toc li{margin:0}
+.toc button{width:100%;display:grid;grid-template-columns:2.2em 1fr auto;gap:.5em;align-items:baseline;text-align:left;padding:.42em 0;border-bottom:1px solid var(--line);font-size:1em;line-height:1.3}
+.toc button:hover{color:var(--gold2)}
+.toc .r{font-family:var(--f-d);color:var(--gold);font-weight:600}
+.toc .n{font-family:var(--f-d);color:var(--mist);font-variant-numeric:tabular-nums}
+.lg{margin-bottom:1em;padding-bottom:.8em;border-bottom:1px solid var(--line)}
+.lg h3{margin-top:.4em}
+.lay{display:grid;gap:.3em;justify-content:center;padding:.6em;background:rgba(143,107,39,.07);border-radius:6px;margin-bottom:.4em}
+.slotc{width:1.9em;aspect-ratio:7/12;border:1px solid var(--gold);border-radius:3px;display:grid;place-items:center;font-family:var(--f-d);font-size:.95em;color:var(--gold);font-weight:600;background:rgba(214,180,108,.08)}
+.slotc.x{visibility:hidden}
+.when{font-style:italic;color:var(--mist);font-size:.92em;margin-bottom:.4em!important}
+.pos{list-style:none;margin:0 0 .4em!important;counter-reset:p}
+.pos li{display:grid;grid-template-columns:1.2em 1fr;gap:.3em}
+.pos li::before{counter-increment:p;content:counter(p);font-family:var(--f-d);color:var(--gold);font-weight:700}
+
+/* Kartenbild-Seite */
+.art .pc{display:flex;flex-direction:column;align-items:center;text-align:center;gap:.35em}
+.art .ey{margin:0}
+.art .cardimg{flex:1 1 auto;min-height:0;width:100%;display:flex;justify-content:center;align-items:center;padding:.3em 0}
+.art img{max-height:100%;max-width:78%;width:auto;height:auto;border-radius:.55em;box-shadow:0 .6em 1.4em rgba(60,40,15,.35),0 .1em .3em rgba(60,40,15,.25)}
+.art .nm{font-family:var(--f-d);font-size:1.75em;font-weight:600;line-height:1.05;letter-spacing:.02em}
+.art .wd{font-size:.85em;color:var(--mist)}
+.art .wd i{font-family:var(--f-d);font-size:1.25em;color:var(--gold2)}
+.art .see{font-size:.86em;font-style:italic;color:var(--mist);text-align:left;line-height:1.45;margin:.3em 0 0;border-top:1px solid var(--line);padding-top:.55em}
+.art .see b{display:block;font-family:var(--f-d);font-style:normal;font-size:.85em;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:.2em;font-weight:600}
+/* Kartentext-Seite */
+.ct h4{font-family:var(--f-d);font-size:.78em;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin:.85em 0 .2em;font-weight:600}
+.ct h4:first-child{margin-top:0}
+.ct .nmh{font-family:var(--f-d);font-size:1.5em;font-weight:600;color:var(--ink);margin-bottom:.1em;line-height:1.1}
+.ct .eyc{color:var(--c)}
+.ct p{margin-bottom:.45em}
+.ct .ask{font-family:var(--f-d);font-style:italic;font-size:1.32em;line-height:1.25;color:var(--gold2);margin:.8em 0 .5em;padding:.5em 0;border-block:1px solid var(--line)}
+.ct .ask small{display:block;font-style:normal;font-size:.56em;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.15em}
+.ct .do{font-size:.92em;color:var(--mist)}
+.ct .do b{color:var(--ink)}
+
+/* Frage-Seite */
+.askp .pc{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:.9em}
+.askp .orn svg{width:3.2em;height:auto}
+.askp .aq{font-family:var(--f-d);font-style:italic;font-size:1.9em;line-height:1.2;color:var(--gold2);max-width:12em;margin:0}
+.askp .aq small{display:block;font-style:normal;font-size:.36em;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.6em}
+.askp .ai{max-width:20em;color:var(--mist);margin:0}
+.askp .ai b{display:block;font-family:var(--f-d);font-size:.8em;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:.2em}
+.askp .lines{width:100%;margin-top:.6em;text-align:left}
+.askp .lines span{font-family:var(--f-d);font-size:.75em;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.askp .lines i{display:block;height:2em;border-bottom:1px solid var(--line)}
+/* Umschlag, Leerseite, Rückseite */
+.cover{background:radial-gradient(ellipse at 50% 55%,#3e2a6e 0%,#24174a 45%,#140c25 100%)}
+.cover .pc{display:flex;flex-direction:column;align-items:center;justify-content:space-between;text-align:center;padding:1.2em 0}
+.cover .t1{font-family:var(--f-d);letter-spacing:.32em;text-transform:uppercase;color:var(--gold);font-size:.75em;font-weight:600}
+.cover .t2{font-family:var(--f-d);font-size:3.1em;letter-spacing:.12em;color:var(--gold);font-weight:600;line-height:1;text-shadow:0 0 .6em rgba(217,184,108,.35)}
+.cover .t3{font-family:var(--f-d);letter-spacing:.34em;text-transform:uppercase;font-size:.85em;margin-top:.5em}
+.cover img{width:46%;border-radius:.5em;box-shadow:0 1em 2.5em rgba(0,0,0,.6),0 0 3em rgba(217,184,108,.2)}
+.cover .au{font-family:var(--f-d);letter-spacing:.24em;text-transform:uppercase;font-size:.9em}
+.filler .pc{display:grid;place-items:center}
+.filler svg{width:34%;opacity:.55}
+.backc .pc{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:1em}
+.backc img{width:3.4em}
+.backc p{color:var(--mist);max-width:22em}
+
+/* Umblättern */
+.flip{position:absolute;top:0;width:var(--pw);height:var(--ph);transform-style:preserve-3d;z-index:5;will-change:transform}
+.flip .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip .back{transform:rotateY(180deg)}
+.flip .shade{position:absolute;inset:0;pointer-events:none;opacity:0}
+.flip .front .shade{background:linear-gradient(90deg,rgba(60,40,15,0) 0%,rgba(60,40,15,.35) 100%)}
+.flip .back .shade{background:linear-gradient(270deg,rgba(60,40,15,0) 0%,rgba(60,40,15,.35) 100%)}
+
+/* Fenster: Intro, Inhalt, Klang */
+.ov{position:fixed;inset:0;z-index:40;display:grid;place-items:safe center;overflow:auto;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:rgba(8,5,16,.72);backdrop-filter:blur(8px)}
+.ov[hidden]{display:none}
+.panel{background:linear-gradient(180deg,#22183c,#170f2a);border:1px solid var(--line);border-radius:14px;padding:1.4rem;width:min(760px,100%);max-height:100%;overflow:auto;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.panel h2{font-family:var(--f-d);font-weight:600;font-size:1.8rem;margin-bottom:.2rem}
+.panel .x{float:right;font-size:1.4rem;line-height:1;color:var(--mist);padding:.2rem .4rem}
+.panel .x:hover{color:var(--gold)}
+.chaps{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.2rem 1.2rem;margin:.8rem 0 1.2rem}
+.chaps button{text-align:left;padding:.5rem 0;border-bottom:1px solid var(--line);display:flex;gap:.7rem;align-items:baseline}
+.chaps button:hover{color:var(--gold2)}
+.chaps b{font-family:var(--f-d);color:var(--gold);min-width:2rem}
+.grp{font-family:var(--f-d);letter-spacing:.24em;text-transform:uppercase;font-size:.8rem;color:var(--gold);margin:1rem 0 .5rem;font-weight:600}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:.5rem}
+.thumbs button{display:grid;gap:.2rem;font-size:.66rem;color:var(--mist);line-height:1.2;text-align:center}
+.thumbs img{width:100%;aspect-ratio:480/823;object-fit:cover;border-radius:4px;transition:transform .2s}
+.thumbs button:hover img{transform:translateY(-3px)}
+.moods{display:grid;grid-template-columns:repeat(auto-fill,minmax(10.5rem,1fr));gap:.5rem;margin:1rem 0}
+.moods button{text-align:left;padding:.6rem .75rem;border:1px solid var(--line);border-radius:10px;display:grid;gap:.1rem}
+.moods button small{color:var(--mist);font-size:.75rem}
+.moods button[aria-pressed="true"]{border-color:var(--gold);background:rgba(214,180,108,.1)}
+.row{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
+.big{padding:.7rem 1.3rem;border-radius:999px;background:linear-gradient(180deg,#e7c77e,#b8913f);color:#1a1029;font-weight:600;letter-spacing:.02em;box-shadow:0 8px 24px rgba(217,184,108,.25)}
+.big:hover{filter:brightness(1.07)}
+.ghost{padding:.65rem 1.1rem;border-radius:999px;border:1px solid var(--line)}
+.ghost:hover{border-color:var(--gold)}
+#vol{accent-color:var(--gold);width:min(260px,60vw)}
+label.chk{display:flex;align-items:center;gap:.5rem;color:var(--mist);font-size:.9rem}
+label.chk input{accent-color:var(--gold);width:18px;height:18px}
+
+#intro{background:radial-gradient(ellipse at 50% 45%,rgba(43,28,80,.92),rgba(10,6,20,.97))}
+.intro{display:grid;justify-items:center;text-align:center;gap:1rem;max-width:34rem}
+.intro img{width:min(180px,40vw);border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 60px rgba(217,184,108,.25);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px) rotate(-1.5deg)}}
+.intro .ey{font-size:.75rem}
+.intro h1{font-family:var(--f-d);font-weight:600;font-size:clamp(2.4rem,9vw,3.8rem);letter-spacing:.12em;text-transform:uppercase;color:var(--gold);line-height:1;text-shadow:0 0 .5em rgba(217,184,108,.3)}
+.intro .s{font-family:var(--f-d);letter-spacing:.3em;text-transform:uppercase;font-size:.95rem}
+.intro p{color:var(--mist);max-width:28rem}
+.hint{font-size:.78rem;color:var(--mist);opacity:.8}
+@media (max-height:700px){.intro{gap:.6rem}.intro img{width:min(110px,30vw)}.intro h1{font-size:2.4rem}}
+#measure{position:fixed;left:-99999px;top:0;width:var(--pw);height:var(--ph);visibility:hidden;pointer-events:none}
+@media (prefers-reduced-motion:reduce){.intro img{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="dustBack" aria-hidden="true"></canvas>
+
+<div id="app">
+  <header class="bar">
+    <div class="brand"><img src="img/logo.webp" alt="" width="26" height="28"><span>Kartenreich</span></div>
+    <button class="tb" id="bApp" type="button" aria-label="Als App installieren" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg><span class="lbl">Als App</span></button>
+    <button class="tb" id="bZoom" type="button" aria-label="Seite vergrößern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5M11 8v6M8 11h6"/></svg><span class="lbl">Zoom</span></button>
+    <button class="tb" id="bToc" type="button" aria-label="Inhalt öffnen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Inhalt</span></button>
+    <button class="tb" id="bSnd" type="button" aria-label="Klangraum öffnen" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg><span class="lbl">Klangraum</span></button>
+    <button class="tb" id="bFs" type="button" aria-label="Vollbild"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg><span class="lbl">Vollbild</span></button>
+  </header>
+  <main id="stage" aria-label="Buch"><div id="float"><div id="ground" aria-hidden="true"></div><div id="fly"><div id="tilt"><div id="book"></div><div class="edge b" aria-hidden="true"></div><div class="edge r" aria-hidden="true"></div><div class="edge l" aria-hidden="true"></div><div class="sheen" aria-hidden="true"></div></div></div></div></main>
+  <nav class="ctrl" aria-label="Blättern">
+    <button class="nav" id="prev" type="button" aria-label="Zurückblättern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <div class="seekwrap"><input type="range" id="seek" min="0" max="1" value="0" aria-label="Seite wählen"><div id="pnum" aria-live="polite"></div></div>
+    <button class="nav" id="next" type="button" aria-label="Weiterblättern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+  </nav>
+</div>
+
+<canvas id="dustFront" aria-hidden="true"></canvas>
+
+<div class="ov" id="intro">
+  <div class="intro">
+    <img src="img/rueckseite.webp" alt="Kartenreich Kartenrückseite">
+    <p class="ey">Das Buch zum Tarot-Deck</p>
+    <h1>Kartenreich</h1>
+    <p class="s">78 Karten verstehen</p>
+    <p>Blättere durch alle 78 Karten deines Decks. Jede mit ihrem Bild, ihrer Bedeutung und der Frage, die sie dir stellt.</p>
+    <div class="row" style="justify-content:center">
+      <button class="big" id="openMusic" type="button">✦ Buch öffnen mit Musik</button>
+      <button class="ghost" id="openQuiet" type="button">Ohne Musik lesen</button>
+    </div>
+    <p class="hint">Blättern mit den Pfeilen, den Pfeiltasten oder per Wischen.</p>
+  </div>
+</div>
+
+<div class="ov" id="tocOv" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="tocH">
+    <button class="x" type="button" data-close aria-label="Schließen">✕</button>
+    <h2 id="tocH">Inhalt</h2>
+    <div class="chaps" id="chaps"></div>
+    <div id="thumbs"></div>
+  </div>
+</div>
+
+<div class="ov" id="sndOv" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sndH" style="width:min(620px,100%)">
+    <button class="x" type="button" data-close aria-label="Schließen">✕</button>
+    <h2 id="sndH">Dein Klangraum</h2>
+    <p style="color:var(--mist)">Ruhige Musik, die im Moment entsteht und sich nie genau wiederholt. Wähle eine Stimmung.</p>
+    <div class="moods" id="moods"></div>
+    <div class="row">
+      <button class="big" id="play" type="button">▶ Musik beginnen</button>
+      <label class="chk" for="vol">Lautstärke <input type="range" id="vol" min="0" max="100" value="50"></label>
+    </div>
+    <div class="row" style="margin-top:.9rem">
+      <label class="chk"><input type="checkbox" id="swish" checked> Leises Rascheln beim Umblättern</label>
+    </div>
+  </div>
+</div>
+
+<div class="ov" id="appOv" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="appH" style="width:min(520px,100%)">
+    <button class="x" type="button" data-close aria-label="Schließen">✕</button>
+    <h2 id="appH">Das Buch als App</h2>
+    <p style="color:var(--mist);margin:.4rem 0 1rem">Lege dir das Buch mit eigenem Icon auf den Desktop oder Startbildschirm. Es öffnet sich dann wie ein Programm und ist auch ohne Internet lesbar.</p>
+    <div id="appSteps"></div>
+  </div>
+</div>
+
+<div class="ov zoom" id="zoomOv" hidden role="dialog" aria-modal="true" aria-label="Vergrößerte Ansicht">
+  <div class="zbar">
+    <button class="nav" id="zOut" type="button" aria-label="Verkleinern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h12"/></svg></button>
+    <span id="zPct">150 %</span>
+    <button class="nav" id="zIn" type="button" aria-label="Vergrößern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 12h12M12 6v12"/></svg></button>
+    <button class="nav x" type="button" data-close aria-label="Zoom schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div id="zArea"><div id="zSizer"><div id="zInner"></div></div></div>
+  <button class="nav zside l" id="zPrev" type="button" aria-label="Zurückblättern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="nav zside r" id="zNext" type="button" aria-label="Weiterblättern"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div id="zPn"></div>
+</div>
+
+<div id="measure" aria-hidden="true"></div>
+
+<!-- ===== Kapiteltexte: jedes direkte Kind ist ein Baustein, der beim Umbrechen auf Seiten verteilt wird ===== -->
+<template id="t-willkommen">
+  <p class="ey">Kapitel I</p>
+  <h2>Willkommen in deinem Kartenreich</h2>
+  <p class="drop">Du hältst ein Deck in den Händen, das es so kein zweites Mal gibt. Jede der 78 Karten wurde für Kartenreich gestaltet: mit eigenen Bildern, eigenen Farben und einem Wort, das unten auf jeder Karte steht. Dieses Buch gehört genau zu diesen Bildern. Es erklärt dir nicht irgendein Tarot, sondern deines.</p>
+  <p>Vielleicht hast du schon einmal Karten gelegt und dich gefragt, warum die Bedeutungen in Büchern so wenig mit dem zu tun haben, was du vor dir siehst. Das liegt daran, dass die meisten Bücher für ein altes Standarddeck geschrieben wurden. Hier ist es anders. Wenn in diesem Buch steht, dass der Turm ein Leuchtturm ist, dann weil er auf deiner Karte ein Leuchtturm ist. Wenn ich schreibe, dass über der Zehn der Schwerter ein kleiner Keimling wächst, dann kannst du ihn suchen und finden.</p>
+  <p>Tarot ist für mich kein Blick in eine feststehende Zukunft. Es ist eine Sammlung von Bildern, die alte menschliche Erfahrungen erzählen: Aufbruch, Liebe, Verlust, Mut, Zweifel, Neubeginn. Wenn du eine Karte ziehst, hältst du dir eines dieser Bilder vor Augen und fragst: Was davon erkenne ich gerade in meinem Leben? Die Antwort findest du nicht in der Karte, sondern in dir. Die Karte hilft dir nur, genauer hinzuschauen.</p>
+  <p>Du brauchst für dieses Buch kein Vorwissen. Du brauchst Neugier, ein wenig Ruhe und die Bereitschaft, erst zu schauen und dann zu lesen. Alles andere wächst mit der Zeit.</p>
+  <h3>So benutzt du dieses Buch</h3>
+  <p>Du kannst es von vorn nach hinten lesen wie eine Reise. Du kannst es aber auch als Nachschlagewerk nutzen: Karte ziehen, im Inhalt antippen, lesen. Jede Karte hat eine Doppelseite mit denselben Bausteinen:</p>
+  <ul>
+    <li><strong>Was du siehst</strong> beschreibt das Bild auf deiner Karte. Lies es erst, nachdem du selbst geschaut hast.</li>
+    <li><strong>Was sie erzählt</strong> ist die Grundbedeutung, wie sie aus Bild und Tradition entsteht.</li>
+    <li><strong>Im Licht</strong> zeigt die Kraft der Karte, wenn sie frei fließt.</li>
+    <li><strong>Im Schatten</strong> zeigt, wie dieselbe Kraft blockiert oder übertrieben aussehen kann. Diesen Teil kannst du auch für umgekehrte Karten nutzen.</li>
+    <li><strong>Die Frage der Karte</strong> ist das Herz jedes Eintrags.</li>
+    <li><strong>Impuls</strong> ist eine kleine Handlung für den Alltag.</li>
+  </ul>
+  <p class="note">Ein Tipp vorab: Leg dir ein Heft neben dein Deck. Was du selbst über eine Karte aufschreibst, wird dir mit der Zeit mehr bedeuten als alles, was in diesem Buch steht.</p>
+</template>
+
+<template id="t-deck">
+  <p class="ey">Kapitel II</p>
+  <h2>So ist dein Deck gebaut</h2>
+  <p class="sub">78 Karten, zwei große Teile, vier Elemente</p>
+  <p>Ein Tarot hat immer 78 Karten. Sie teilen sich in zwei Gruppen, die man seit Jahrhunderten Arkana nennt, nach dem lateinischen Wort für Geheimnis.</p>
+  <div class="facts"><div><b>22</b>Große Arkana, von 0 bis XXI. Die großen Lebensthemen.</div><div><b>56</b>Kleine Arkana in vier Farben. Der Alltag.</div><div><b>40</b>Zahlenkarten, vom Ass bis zur Zehn.</div><div><b>16</b>Hofkarten: Bube, Ritter, Königin, König.</div></div>
+  <h3>Die Großen Arkana</h3>
+  <p>Die 22 Großen Arkana tragen römische Ziffern und erzählen eine zusammenhängende Geschichte. Sie beginnt mit dem Narren, der lachend an der Felskante steht, und endet mit der Welt, wo eine Tänzerin im Lorbeerkranz schwebt. Wenn eine Große Arkana in deiner Legung liegt, geht es meist um etwas Grundsätzliches.</p>
+  <h3>Die vier Farben</h3>
+  <p>Die Kleinen Arkana zeigen die Bühne des Alltags. Sie sind nach den vier Elementen geordnet, und dein Deck macht diese Elemente in seinen Farben sichtbar.</p>
+  <div class="suits"><div class="suit" style="--c:var(--fire)"><span>Feuer</span><b>Stäbe</b>Glut, Gold und Purpur. Antrieb, Ideen, Mut.</div><div class="suit" style="--c:var(--water)"><span>Wasser</span><b>Kelche</b>Nachtblau, Seen, Muscheln. Gefühle, Träume.</div><div class="suit" style="--c:var(--air)"><span>Luft</span><b>Schwerter</b>Kristall und Geometrie. Gedanken, Worte.</div><div class="suit" style="--c:var(--earth)"><span>Erde</span><b>Münzen</b>Grün und Gold. Arbeit, Geld, Körper.</div></div>
+  <h3>Die Zahlen</h3>
+  <p>Jede Zahl hat in allen vier Farben eine ähnliche Grundstimmung.</p>
+  <ul>
+    <li><strong>Ass</strong> · der Keim, ein Anfang</li>
+    <li><strong>Zwei</strong> · Begegnung, Wahl, Gleichgewicht</li>
+    <li><strong>Drei</strong> · erstes Wachstum, Austausch</li>
+    <li><strong>Vier</strong> · Fundament, Ruhe, manchmal Stillstand</li>
+    <li><strong>Fünf</strong> · Reibung, Verlust, Herausforderung</li>
+    <li><strong>Sechs</strong> · Ausgleich, Übergang, Harmonie</li>
+    <li><strong>Sieben</strong> · Prüfung, Abwägen, Strategie</li>
+    <li><strong>Acht</strong> · Bewegung, Übung, Kraft</li>
+    <li><strong>Neun</strong> · fast am Ziel, Fülle oder Last</li>
+    <li><strong>Zehn</strong> · Vollendung, ein Kreis schließt sich</li>
+  </ul>
+  <h3>Die Hofkarten</h3>
+  <p>Bube, Ritter, Königin und König können für Menschen in deinem Leben stehen. Häufiger zeigen sie eine Haltung, die du selbst gerade einnimmst oder lernen darfst.</p>
+  <ul>
+    <li><strong>Bube</strong> · der Lernende. Neugier, Botschaften.</li>
+    <li><strong>Ritter</strong> · der Handelnde. Bewegung, Tempo.</li>
+    <li><strong>Königin</strong> · Reife nach innen. Fürsorge, Tiefe.</li>
+    <li><strong>König</strong> · Reife nach außen. Verantwortung, Führung.</li>
+  </ul>
+  <h3>Das Wort auf jeder Karte</h3>
+  <p>Unter jedem Kartennamen steht in deinem Deck ein einzelnes Wort, zum Beispiel <em>Unschuld</em> beim Narren oder <em>Befreiung</em> beim Teufel. Dieses Wort ist kein Urteil, sondern ein Schlüssel. Es zeigt dir, aus welcher Richtung Kartenreich auf die Karte schaut.</p>
+  <h3>Das Siegel und die Rückseite</h3>
+  <p>Oben auf jeder Vorderseite sitzt ein kleines rotes Medaillon mit goldenem Monogramm. Es verbindet alle 78 Bilder zu einer Familie. Die Rückseite ist so gestaltet, dass du nicht erkennen kannst, ob eine Karte aufrecht oder umgekehrt im Stapel liegt.</p>
+</template>
+
+<template id="t-arbeiten">
+  <p class="ey">Kapitel III</p>
+  <h2>Wie du mit deinen Karten arbeitest</h2>
+  <p class="sub">Erst schauen, dann lesen</p>
+  <h3>Bevor du beginnst</h3>
+  <p>Du brauchst keinen besonderen Ort und kein Ritual. Ein freier Tisch, etwas Ruhe und ein paar Minuten genügen. Wenn das Deck neu ist, leg alle 78 Karten einmal in Reihen aus. Welche Karte zieht dich an? Welche ist dir unangenehm? Notiere beides.</p>
+  <h3>Die Frage stellen</h3>
+  <p>Die Qualität einer Legung hängt fast immer an der Frage. „Wird er sich melden?“ lässt der Karte keinen Raum. „Was darf ich über diese Verbindung verstehen?“ öffnet ihn. Gute Fragen enthalten Wörter wie <em>verstehen, erkennen, beachten, lernen</em> oder <em>beeinflussen</em>. Schreib die Frage auf, bevor du mischst.</p>
+  <h3>Mischen und Ziehen</h3>
+  <p>Misch so, wie es dir angenehm ist. Denk dabei an deine Frage, ohne dich zu verkrampfen. Hör auf, wenn es sich richtig anfühlt, und zieh die Karten von oben oder aus dem Fächer. Es gibt keinen falschen Weg.</p>
+  <h3>Eine Karte lesen in vier Schritten</h3>
+  <ol class="steps">
+    <li><div><b>Schau.</b> Betrachte das Bild eine Minute lang, bevor du nachliest. Wer ist zu sehen? Welche Farben, welches Licht, welche Haltung?</div></li>
+    <li><div><b>Spür.</b> Welches Gefühl löst die Karte aus? Es ist nicht die ganze Wahrheit, aber ein wichtiger Hinweis.</div></li>
+    <li><div><b>Lies.</b> Jetzt schlag die Karte auf. Was deckt sich mit deinem Eindruck? Was überrascht dich?</div></li>
+    <li><div><b>Verbinde.</b> Formuliere einen Satz: „Für mich heißt das heute …“. Dieser Satz ist deine Deutung.</div></li>
+  </ol>
+  <h3>Aufrecht und umgekehrt</h3>
+  <p>Wenn du mit umgekehrten Karten arbeiten möchtest, nutze den Abschnitt <em>Im Schatten</em>. Eine umgekehrte Karte bedeutet nicht das Gegenteil. Sie zeigt dieselbe Kraft, nur gebremst, nach innen gekehrt oder übertrieben. Am Anfang darfst du alle Karten aufrecht legen.</p>
+  <h3>Wenn die Karte nicht passt</h3>
+  <p>Leg die Karte nicht zurück und zieh keine neue. Schreib sie auf und schau abends noch einmal drauf. Oft zeigt sich die Bedeutung erst im Nachhinein.</p>
+  <h3>Dein Kartentagebuch</h3>
+  <p>Notiere Datum, Frage, Karten und deinen Satz. Nach einigen Wochen erkennst du Muster: Karten, die immer wiederkommen, Farben, die sich häufen. Dieses Tagebuch ist das eigentliche Lehrbuch.</p>
+</template>
+
+<template id="t-arkana">
+  <p class="ey">Kapitel IV</p>
+  <h2>Die 22 Großen Arkana</h2>
+  <p class="sub">Die Reise vom Narren zur Welt</p>
+  <p class="drop">Die Großen Arkana lassen sich wie eine Geschichte lesen. Am Anfang steht der Narr, Karte 0, mit seinem kleinen Bündel und seinem weißen Hund. Er hat noch keine Nummer, weil er überall sein kann.</p>
+  <p>Auf seinem Weg begegnet er zuerst den großen Lehrern. Der Magier zeigt ihm, was er kann, die Hohepriesterin, was er ahnt. Herrscherin und Herrscher stehen für Wachstum und Ordnung, der Hierophant für das Überlieferte. Dann muss der Narr selbst wählen, bei den Liebenden, und losfahren, im Wagen.</p>
+  <p>In der Mitte wird es stiller und tiefer: Kraft, Eremit, Schicksalsrad, Gerechtigkeit und der Gehängte. Dann kommen die großen Verwandlungen: der Tod, der in deinem Deck in den Sonnenaufgang reitet, die Mäßigkeit, der Teufel, den euer Deck Befreiung nennt, und der Turm als Leuchtturm im Gewitter.</p>
+  <p>Nach dem Sturm folgen die Lichtkarten: Stern, Mond und Sonne. Zuletzt ruft der Engel des Gerichts zum Neuanfang, und in der Welt schließt sich der Kreis.</p>
+  <p class="q">Wo auf dieser Reise stehst du gerade?</p>
+</template>
+
+<template id="t-legungen">
+  <p class="ey">Kapitel IX</p>
+  <h2>Legungen für dein Deck</h2>
+  <p class="sub">Von einer Karte bis zum ganzen Jahr</p>
+  <p>Eine Legung ist eine Frage, die in mehrere kleinere Fragen aufgeteilt wird. Jeder Platz hat eine Aufgabe. Drei gut gelesene Karten sagen mehr als zehn überflogene.</p>
+  <div class="lg"><div class="lay" style="grid-template-columns:auto"><div class="slotc">1</div></div><h3>Die Tageskarte</h3><p class="when">Für jeden Morgen</p><p>Zieh morgens eine Karte mit der Frage: <em>Worauf darf ich heute achten?</em> Abends schaust du zurück: Wo ist dir das Thema begegnet?</p></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(3,auto)"><div class="slotc">1</div><div class="slotc">2</div><div class="slotc">3</div></div><h3>Die Legung der drei Fragen</h3><p class="when">Die Kartenreich-Legung für den Einstieg</p><ol class="pos"><li>Was war? Der Hintergrund deiner Situation.</li><li>Was ist? Das, was gerade im Mittelpunkt steht.</li><li>Was möchte gesehen werden? Was du bisher übersehen hast.</li></ol></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(3,auto)"><div class="slotc">1</div><div class="slotc">2</div><div class="slotc">3</div></div><h3>Gestern, heute, nächster Schritt</h3><p class="when">Wenn du handeln willst</p><ol class="pos"><li>Was liegt hinter mir?</li><li>Was braucht jetzt meine Aufmerksamkeit?</li><li>Welcher nächste Schritt ist möglich?</li></ol><p>Formuliere zur dritten Karte einen Satz, der mit „Ich kann …“ beginnt.</p></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(3,auto)"><div class="slotc">1</div><div class="slotc">3</div><div class="slotc">2</div></div><h3>Die Entscheidung</h3><p class="when">Wenn zwei Wege vor dir liegen</p><ol class="pos"><li>Was spricht für diesen Weg?</li><li>Was braucht Aufmerksamkeit oder spricht dagegen?</li><li>Was sollte ich zusätzlich bedenken? (Mitte)</li></ol><p>Die Entscheidung triffst du, nicht das Deck.</p></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(3,auto)"><div class="slotc">1</div><div class="slotc">2</div><div class="slotc">3</div></div><h3>Ich und du</h3><p class="when">Für Beziehungen, ohne Gedanken zu erraten</p><ol class="pos"><li>Was bringe ich in diese Verbindung ein?</li><li>Was verbindet uns?</li><li>Was kann ich für ein gutes Miteinander tun?</li></ol></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(3,auto)"><div class="slotc x"></div><div class="slotc">3</div><div class="slotc x"></div><div class="slotc">2</div><div class="slotc">1</div><div class="slotc">4</div><div class="slotc x"></div><div class="slotc">5</div><div class="slotc x"></div></div><h3>Das Kreuz der fünf</h3><p class="when">Für eine Frage, die mehr Tiefe braucht</p><ol class="pos"><li>Wo stehe ich? (Mitte)</li><li>Was beschäftigt mich? (links)</li><li>Was sehe ich noch nicht? (oben)</li><li>Was kann ich tun? (rechts)</li><li>Was nehme ich mit? (unten)</li></ol></div>
+  <div class="lg"><div class="lay" style="grid-template-columns:repeat(6,auto)"><div class="slotc">1</div><div class="slotc">2</div><div class="slotc">3</div><div class="slotc">4</div><div class="slotc">5</div><div class="slotc">6</div><div class="slotc">7</div><div class="slotc">8</div><div class="slotc">9</div><div class="slotc">10</div><div class="slotc">11</div><div class="slotc">12</div></div><h3>Das Jahresrad</h3><p class="when">Zum Jahreswechsel oder Geburtstag</p><p>Zwölf Karten, eine für jeden Monat, dazu eine dreizehnte als Überschrift für das Jahr. Lies sie als Thema, dem du im jeweiligen Monat Aufmerksamkeit schenkst, nicht als Vorhersage.</p></div>
+  <h3>Wenn viele Karten einer Art fallen</h3>
+  <p>Viele Große Arkana zeigen ein grundlegendes Lebensthema. Viele Stäbe bringen Tatendrang, viele Kelche Gefühle, viele Schwerter Gedanken und Klärung, viele Münzen das Praktische. Mehrere Hofkarten zeigen, dass andere Menschen stark beteiligt sind.</p>
+</template>
+
+<template id="t-schwierig">
+  <p class="ey">Kapitel X</p>
+  <h2>Wenn eine Karte erschreckt</h2>
+  <p class="drop">Früher oder später ziehst du eine Karte, bei der dir kurz der Atem stockt. Der Tod. Der Turm. Der Teufel. Die Zehn der Schwerter. Diese Bilder sind dunkel, und das dürfen sie sein. Aber sie sind keine Katastrophenmeldungen.</p>
+  <p>Schau in deinem Deck genau hin. Der schwarze Ritter des Todes reitet in einen Sonnenaufgang, auf seiner Fahne blüht eine weiße Rose. Der Turm ist ein Leuchtturm, und hinter den Gewitterwolken sieht man schon die Sterne. Der Teufel trägt das Wort Befreiung. Über der Zehn der Schwerter wächst ein grüner Keimling.</p>
+  <p>Wenn dich eine Karte erschreckt, stell ihr drei Fragen:</p>
+  <ul><li>Was genau macht mir an diesem Bild Angst?</li><li>Welches Detail im Bild zeigt eine andere Seite?</li><li>Was könnte diese Karte mir helfen zu sehen?</li></ul>
+  <p>Und zieh nicht so lange neu, bis eine freundlichere Karte erscheint. Die unbequeme Karte ist oft die ehrlichste.</p>
+  <p class="note">Bei Fragen zu Gesundheit, Recht oder Geld gehören fachkundige Menschen an die erste Stelle. Die Karten helfen dir, deine Gedanken zu sortieren. Einen Rat ersetzen sie nicht.</p>
+</template>
+
+<template id="t-nachwort">
+  <p class="ey">Nachwort</p>
+  <h2>Deine Karten bleiben</h2>
+  <p class="drop">Du bist jetzt einmal durch alle 78 Karten gegangen. Vielleicht hast du jede gelesen, vielleicht nur ein paar. Beides ist in Ordnung. Dieses Buch soll neben deinem Deck liegen und dich begleiten, so lange du möchtest.</p>
+  <p>Mit der Zeit wirst du immer seltener nachschlagen. Du wirst eine Karte ziehen und wissen, was sie dir sagen will. Das ist der Moment, in dem dein eigenes Kartenreich entstanden ist.</p>
+  <p>Wenn du Schritt für Schritt üben möchtest, gibt es zu diesem Deck das Arbeitsbuch <em>Kartenreich · Transformation</em>. Es führt dich in 21 Tagen von der ersten Karte bis zu deiner eigenen Legung.</p>
+  <p>Ich wünsche dir viele gute Fragen.</p>
+  <p style="font-family:var(--f-d);font-size:1.4em;color:var(--gold2);margin-top:.8em">Frank Zimmermann</p>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
+<script src="data-arkana.js"></script>
+<script src="data-staebe.js"></script>
+<script src="data-kelche.js"></script>
+<script src="data-schwerter.js"></script>
+<script src="data-muenzen.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)};
+var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+var store={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+var SUITS=[KR.staebe,KR.kelche,KR.schwerter,KR.muenzen];
+var SKEY=['staebe','kelche','schwerter','muenzen'];
+var SCOL=['var(--fire)','var(--water)','var(--air)','var(--earth)'];
+var ROMAN=['V','VI','VII','VIII'];
+
+/* ===================== Sternenstaub ===================== */
+var Dust=(function(){
+  var cb=$('#dustBack'),cf=$('#dustFront'),gb=cb.getContext('2d'),gf=cf.getContext('2d');
+  var W=0,H=0,dpr=1,amb=[],fx=[],sweeps=[],raf=0,last=0,lastTrail=0;
+  var COLS=['#fff3c4','#f7d98a','#e8b45a','#d9b8ff','#ffffff'];
+  var spr=COLS.map(function(c){var s=document.createElement('canvas');s.width=s.height=64;var g=s.getContext('2d');
+    var r=g.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,c);r.addColorStop(.18,c);r.addColorStop(.4,'rgba(255,230,170,.25)');r.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=r;g.fillRect(0,0,64,64);g.globalAlpha=.9;g.fillStyle=c;g.beginPath();for(var k=0;k<8;k++){var q=k%2?3:30,a=k*Math.PI/4;g.lineTo(32+Math.cos(a)*q,32+Math.sin(a)*q)}g.closePath();g.fill();return s});
+  function size(){dpr=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;[cb,cf].forEach(function(c){c.width=W*dpr;c.height=H*dpr});gb.setTransform(dpr,0,0,dpr,0,0);gf.setTransform(dpr,0,0,dpr,0,0);
+    var n=Math.round(Math.min(75,W*H/16000));amb=[];for(var i=0;i<n;i++)amb.push(mkA(true))}
+  function mkA(any){return{x:Math.random()*W,y:any?Math.random()*H:H+10,vx:(Math.random()-.5)*.05,vy:-(.03+Math.random()*.08),s:.8+Math.random()*2.6,c:(Math.random()*COLS.length)|0,ph:Math.random()*6.28,tw:.3+Math.random()*.7}}
+  function emit(x,y,n,spread,up,fade){for(var i=0;i<n;i++)fx.push({x:x+(Math.random()-.5)*(spread||8),y:y+(Math.random()-.5)*(spread||8),vx:(Math.random()-.5)*1.4,vy:(Math.random()-.5)*1.4-(up||.4),s:2+Math.random()*4.5,c:(Math.random()*COLS.length)|0,life:1,dec:(fade||.008)+Math.random()*.014})}
+  function draw(g,p,al){var sz=p.s*4;g.globalAlpha=al;g.drawImage(spr[p.c],p.x-sz/2,p.y-sz/2,sz,sz)}
+  function frame(t){raf=requestAnimationFrame(frame);var dt=Math.min(50,t-(last||t));last=t;
+    gb.clearRect(0,0,W,H);
+    for(var i=0;i<amb.length;i++){var p=amb[i];p.x+=p.vx*dt*.06;p.y+=p.vy*dt*.06;if(p.y<-10||p.x<-10||p.x>W+10)amb[i]=mkA(false);
+      draw(gb,p,.18+.45*Math.abs(Math.sin(t/1000*p.tw+p.ph)))}
+    gf.clearRect(0,0,W,H);
+    for(var j=sweeps.length-1;j>=0;j--){var s=sweeps[j],k=(t-s.t0)/s.dur;if(k>=1){sweeps.splice(j,1);continue}if(k<0)continue;
+      if(Math.random()<.35){var x=s.fx(k);emit(x,s.top+Math.random()*(s.bot-s.top),1,6,.15,.025)}}
+    for(var q=fx.length-1;q>=0;q--){var f=fx[q];f.x+=f.vx*dt*.06;f.y+=f.vy*dt*.06;f.vy+=.004*dt*.06;f.life-=f.dec*dt*.06;if(f.life<=0){fx.splice(q,1);continue}draw(gf,f,Math.min(1,f.life*1.4))}
+    gb.globalAlpha=1;gf.globalAlpha=1}
+  function start(){if(RM){size();amb.forEach(function(p){draw(gb,p,.5)});return}if(!raf){last=0;raf=requestAnimationFrame(frame)}}
+  function stop(){cancelAnimationFrame(raf);raf=0}
+  addEventListener('resize',function(){size();if(RM)start()});
+  document.addEventListener('visibilitychange',function(){document.hidden?stop():start()});
+  size();
+  return{start:start,
+    burst:function(x,y,n){if(!RM)emit(x,y,Math.min(n||14,18),60,.3,.02)},
+    /* Feiner Funkenhauch entlang einer Seitenkante, steigt langsam auf */
+    edge:function(x,top,bot){if(RM)return;for(var i=0;i<22;i++)emit(x+(Math.random()-.5)*14,top+Math.random()*(bot-top),1,4,.35,.012)},
+    sweep:function(fn,top,bot,dur){if(!RM)sweeps.push({fx:fn,top:top,bot:bot,dur:dur,t0:performance.now()})}};
+})();
+
+/* ===================== Klangraum (generativ, wie auf der Kartenreich-Seite) ===================== */
+var Sound=(function(){
+  var MD=[{n:"Mondlicht",d:"Tiefe, warme Ruhe",r:110,ch:[[0,7,15,19],[-4,3,7,14],[-2,5,10,14],[-7,0,3,10]],sc:[0,3,5,7,10]},
+  {n:"Sternenmeer",d:"Weit, klar und leicht",r:146.83,ch:[[0,7,14,18],[5,9,12,19],[7,11,14,21],[2,9,14,17]],sc:[0,2,4,7,9]},
+  {n:"Sonnenaufgang",d:"Sanft, hell, hoffnungsvoll",r:130.81,ch:[[0,7,11,16],[5,9,12,16],[-3,4,9,12],[-5,2,7,11]],sc:[0,2,4,7,9]},
+  {n:"Waldquelle",d:"Hell, leicht, plätschernd",r:130.81,ch:[[0,7,12,16],[5,9,12,19],[7,11,14,19],[2,9,12,16]],sc:[0,2,4,7,9],o:[1,2,3]},
+  {n:"Ozeantraum",d:"Tief, weit, schwebend",r:98,ch:[[0,7,14,17],[-2,5,12,16],[3,10,14,19],[-5,2,7,14]],sc:[0,2,3,7,9],o:[1,2],p:.6},
+  {n:"Tempelklang",d:"Offen, still, meditativ",r:116.54,ch:[[0,7,12,19],[0,5,12,17],[-2,5,10,17],[0,7,14,19]],sc:[0,2,5,7,9],o:[1,2],p:.5},
+  {n:"Nachtregen",d:"Zart, hoch, tropfend",r:123.47,ch:[[0,7,12,15],[-4,3,7,15],[-2,5,10,14],[-5,2,7,14]],sc:[0,3,5,7,10],o:[2,3]},
+  {n:"Kristallhöhle",d:"Funkelnd, klar, magisch",r:164.81,ch:[[0,7,11,18],[5,12,16,21],[7,14,19,23],[2,9,14,21]],sc:[0,2,4,6,7,9,11],o:[1,2],p:.8}];
+  var S=Object.assign({v:50,m:0,sw:1},store.get('kr_buch_snd',{}));if(!MD[S.m])S.m=0;
+  var ac,mg,bus,dr,on=false,tm={},ci=0;
+  function M(){return MD[S.m]}function F(x){return M().r*Math.pow(2,x/12)}function R(a,b){return a+Math.random()*(b-a)}function pk(a){return a[Math.floor(Math.random()*a.length)]}
+  function tone(f,type,t,a,peak,dec,dst,pan){var o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+dec);o.connect(g);var n=g;if(pan!=null&&ac.createStereoPanner){var p=ac.createStereoPanner();p.pan.value=pan;g.connect(p);n=p}n.connect(dst);o.start(t);o.stop(t+a+dec+.2)}
+  function pad(){var t=ac.currentTime,c=M().ch[ci++%4],lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=750;lp.connect(bus);c.forEach(function(x,i){[-5,5].forEach(function(d){tone(F(x)*Math.pow(2,d/1200),i%2?"triangle":"sine",t,R(4,6),.05,R(7,9),lp,R(-.6,.6))})})}
+  function bell(){if(Math.random()>(M().p||1))return;var t=ac.currentTime,sc=M().sc,f=F(pk(sc)+12*pk(M().o||[1,2])),p=R(-.8,.8);tone(f,"sine",t,.02,.06,R(4,6),bus,p);tone(f*2.01,"sine",t,.02,.015,2.5,bus,p);if(Math.random()<.35)tone(F(pk(sc)+24),"sine",t+R(.4,.9),.02,.035,4,bus,-p)}
+  function bowl(){var t=ac.currentTime,f=F(pk(M().sc.slice(0,3))+12);tone(f,"sine",t,1.5,.06,14,bus,-.3);tone(f+R(1,2),"sine",t,1.5,.05,14,bus,.3)}
+  function loop(k,fn,a,b){var go=function(){if(!on)return;fn();tm[k]=setTimeout(go,R(a,b)*1000)};go()}
+  function init(){ac=new(window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.gain.value=0;mg.connect(ac.destination);bus=ac.createGain();bus.connect(mg);
+    var cv=ac.createConvolver(),wg=ac.createGain(),l=ac.sampleRate*5,b=ac.createBuffer(2,l,ac.sampleRate);for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<l;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/l,2.6)}
+    cv.buffer=b;wg.gain.value=.7;bus.connect(cv);cv.connect(wg);wg.connect(mg);
+    dr=ac.createOscillator();var dg=ac.createGain(),lf=ac.createOscillator(),lg=ac.createGain();dr.frequency.value=F(-12);dg.gain.value=.04;lf.frequency.value=.06;lg.gain.value=.015;lf.connect(lg);lg.connect(dg.gain);dr.connect(dg);dg.connect(bus);dr.start();lf.start();
+    var nb=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate),nd=nb.getChannelData(0);for(var j=0;j<nd.length;j++)nd[j]=Math.random()*2-1;
+    var ns=ac.createBufferSource();ns.buffer=nb;ns.loop=true;var bp=ac.createBiquadFilter();bp.type="bandpass";bp.frequency.value=600;bp.Q.value=.7;var ng=ac.createGain(),l2=ac.createOscillator(),l2g=ac.createGain();ng.gain.value=.012;l2.frequency.value=.05;l2g.gain.value=300;l2.connect(l2g);l2g.connect(bp.frequency);ns.connect(bp);bp.connect(ng);ng.connect(bus);ns.start();l2.start()}
+  function vol(){return S.v/100*.7}
+  function ui(){$('#play').textContent=on?'❚❚ Musik pausieren':'▶ Musik beginnen';$('#bSnd').setAttribute('aria-pressed',on)}
+  function play(){try{if(!ac)init();ac.resume();on=true;mg.gain.cancelScheduledValues(ac.currentTime);mg.gain.setTargetAtTime(vol(),ac.currentTime,2);loop("p",pad,8,11);loop("b",bell,2.5,6);loop("w",bowl,20,34)}catch(e){on=false}ui()}
+  function stop(){on=false;Object.keys(tm).forEach(function(k){clearTimeout(tm[k])});tm={};if(ac){mg.gain.setTargetAtTime(0,ac.currentTime,.8);setTimeout(function(){if(!on)ac.suspend()},3500)}ui()}
+  function save(){store.set('kr_buch_snd',S)}
+  function swish(){if(!S.sw)return;try{if(!ac){init();ac.resume()}if(ac.state==='suspended')ac.resume();var t=ac.currentTime,len=ac.sampleRate*.45,b=ac.createBuffer(1,len,ac.sampleRate),d=b.getChannelData(0);for(var i=0;i<len;i++){var k=i/len;d[i]=(Math.random()*2-1)*Math.sin(Math.PI*k)*Math.pow(1-k,.6)}
+    var s=ac.createBufferSource();s.buffer=b;var f=ac.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(2600,t+.4);f.Q.value=.8;var g=ac.createGain();g.gain.value=.05;s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t)}catch(e){}}
+  $('#moods').innerHTML=MD.map(function(m,i){return '<button type="button" data-i="'+i+'" aria-pressed="'+(i===S.m)+'">'+m.n+'<small>'+m.d+'</small></button>'}).join('');
+  $('#moods').onclick=function(e){var b=e.target.closest('button');if(!b)return;S.m=+b.dataset.i;save();$('#moods').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});if(ac)dr.frequency.setTargetAtTime(F(-12),ac.currentTime,3);if(!on)play()};
+  $('#vol').value=S.v;$('#vol').oninput=function(e){S.v=+e.target.value;save();if(ac&&on)mg.gain.setTargetAtTime(vol(),ac.currentTime,.3)};
+  $('#play').onclick=function(){on?stop():play()};
+  $('#swish').checked=!!S.sw;$('#swish').onchange=function(e){S.sw=e.target.checked?1:0;save()};
+  document.addEventListener('visibilitychange',function(){if(ac&&on){document.hidden?ac.suspend():ac.resume()}});
+  ui();
+  return{play:play,swish:swish};
+})();
+
+/* ===================== Seiten bauen ===================== */
+var book=$('#book'),measure=$('#measure'),mode='spread',PW=0,PH=0,pages=[],keyPage={},cur=0,slotL,slotR;
+var STAR='<svg viewBox="0 0 100 100" fill="none" stroke="#a8843a" stroke-width="1"><circle cx="50" cy="50" r="44"/><circle cx="50" cy="50" r="38" stroke-dasharray="1 3"/><path d="M50 6l6 38 38 6-38 6-6 38-6-38-38-6 38-6z" fill="rgba(168,132,58,.18)"/><circle cx="50" cy="50" r="4" fill="#a8843a"/></svg>';
+
+function tplBlocks(id){var t=document.getElementById(id);return Array.prototype.map.call(t.content.children,function(e){return e.outerHTML})}
+function cardNr(c,major){if(major)return 'Große Arkana · '+c.nr;if(c.nr==='Ass')return 'Ass';if(/^[IVX]+$/.test(c.nr))return 'Zahlenkarte · '+c.nr;return 'Hofkarte · '+c.nr}
+function artHTML(sec){var c=sec.c;return '<p class="ey">'+cardNr(c,sec.major)+'</p><div class="cardimg"><img src="cards/'+c.id+'.jpg" alt="'+esc(c.name)+'" width="480" height="823" decoding="async"></div><div class="nm">'+esc(c.name)+'</div><div class="wd">Auf der Karte · <i>'+esc(c.wort)+'</i></div><div class="see"><b>Was du siehst</b>'+esc(c.bild)+'</div>'}
+function ctBlocks(sec){var c=sec.c,b=[];
+  b.push('<div><p class="ey eyc" style="--c:'+sec.col+';color:'+sec.col+'">'+cardNr(c,sec.major)+'</p><div class="nmh">'+esc(c.name)+'</div></div>');
+  b.push('<div><h4>Was sie erzählt</h4><p>'+esc(c.kern)+'</p></div>');
+  b.push('<div><h4>Im Licht</h4><p>'+esc(c.licht)+'</p></div>');
+  b.push('<div><h4>Im Schatten</h4><p>'+esc(c.schatten)+'</p></div>');
+  if(sec.major){b.push('<div><h4>In der Liebe</h4><p>'+esc(c.liebe)+'</p></div>');b.push('<div><h4>Im Alltag &amp; Beruf</h4><p>'+esc(c.alltag)+'</p></div>')}
+  b.push('<p class="ask"><small>Die Frage der Karte</small>'+esc(c.frage)+'</p>');
+  b.push('<p class="do"><b>Impuls:</b> '+esc(c.impuls)+'</p>');return b}
+function askHTML(sec){var c=sec.c;return '<p class="ey">'+esc(c.name)+'</p><div class="orn">'+STAR+'</div><p class="aq"><small>Die Frage der Karte</small>'+esc(c.frage)+'</p><p class="ai"><b>Impuls</b>'+esc(c.impuls)+'</p><div class="lines"><span>Meine Gedanken</span><i></i><i></i><i></i><i></i></div>'}
+function coverHTML(){return '<div><div class="t1">Das Buch zum Tarot-Deck</div></div><div><div class="t2">KARTENREICH</div><div class="t3">78 Karten verstehen</div></div><img src="img/rueckseite.webp" alt="Kartenrückseite" decoding="async"><div class="au">Frank Zimmermann</div>'}
+function backHTML(){return '<img src="img/logo.webp" alt=""><p class="ey">Kartenreich</p><p>Jede Karte erzählt. Lerne, ihr zuzuhören.</p><p style="font-size:.8em">© 2026 Frank Zimmermann · Kartenreich. Alle Rechte vorbehalten. Dieses Buch dient der Selbstreflexion und ersetzt keine ärztliche, psychotherapeutische, rechtliche oder finanzielle Beratung.</p>'}
+var CHAPS=[['I','Willkommen in deinem Kartenreich','willkommen'],['II','So ist dein Deck gebaut','deck'],['III','Wie du mit deinen Karten arbeitest','arbeiten'],['IV','Die 22 Großen Arkana','arkana'],['V','Die Stäbe · Feuer','staebe'],['VI','Die Kelche · Wasser','kelche'],['VII','Die Schwerter · Luft','schwerter'],['VIII','Die Münzen · Erde','muenzen'],['IX','Legungen für dein Deck','legungen'],['X','Wenn eine Karte erschreckt','schwierig'],['','Nachwort','nachwort']];
+function tocBlocks(){return ['<p class="ey">Inhalt</p>','<h2>Was dich erwartet</h2>','<ul class="toc">'+CHAPS.map(function(c){return '<li><button type="button" data-go="'+c[2]+'"><span class="r">'+c[0]+'</span><span>'+c[1]+'</span><span class="n">{{'+c[2]+'}}</span></button></li>'}).join('')+'</ul>']}
+
+function sections(){var S=[];
+  S.push({kind:'cover',key:'cover'});
+  S.push({kind:'flow',key:'inhalt',head:'Inhalt',blocks:tocBlocks()});
+  S.push({kind:'flow',key:'willkommen',head:'Willkommen',blocks:tplBlocks('t-willkommen'),right:1});
+  S.push({kind:'flow',key:'deck',head:'Das Deck',blocks:tplBlocks('t-deck'),right:1});
+  S.push({kind:'flow',key:'arbeiten',head:'Deuten',blocks:tplBlocks('t-arbeiten'),right:1});
+  S.push({kind:'flow',key:'arkana',head:'Große Arkana',blocks:tplBlocks('t-arkana'),right:1});
+  KR.arkana.forEach(function(c){S.push({kind:'card',c:c,major:true,col:'var(--gold)',head:'Große Arkana'})});
+  SUITS.forEach(function(s,i){
+    S.push({kind:'flow',key:SKEY[i],head:'Die '+s.name,right:1,blocks:['<p class="ey">Kapitel '+ROMAN[i]+'</p>','<h2>Die '+s.name+'</h2>','<p class="sub" style="color:'+SCOL[i]+'">Element '+s.element+' · '+s.thema+'</p>','<p class="drop">'+esc(s.intro)+'</p>','<p class="q">'+esc(s.frage)+'</p>']});
+    s.karten.forEach(function(c){S.push({kind:'card',c:c,major:false,col:SCOL[i],head:'Die '+s.name})})});
+  S.push({kind:'flow',key:'legungen',head:'Legungen',blocks:tplBlocks('t-legungen'),right:1});
+  S.push({kind:'flow',key:'schwierig',head:'Schwierige Karten',blocks:tplBlocks('t-schwierig'),right:1});
+  S.push({kind:'flow',key:'nachwort',head:'Nachwort',blocks:tplBlocks('t-nachwort'),right:1});
+  S.push({kind:'back',key:'back'});
+  return S}
+var SECTIONS=null;
+
+function sideOf(i){return mode==='single'?'single':(i%2?'left':'right')}
+function prepMeasure(i,cls){measure.innerHTML='<div class="page '+sideOf(i)+' '+(cls||'')+'"><div class="pc"></div></div>';return measure.querySelector('.pc')}
+function fits(pc){return pc.scrollHeight<=pc.clientHeight+1}
+var HEADTAG=/^(H2|H3|H4)$/;
+/* Absatz an Satzgrenzen teilen: so viele Sätze wie passen, der Rest geht auf die nächste Seite */
+function splitPara(pc,el){if(el.tagName!=='P'||el.classList.contains('q')||el.classList.contains('ask'))return null;
+  var parts=el.innerHTML.split(/(?<=[.!?…“])\s+(?=[A-ZÄÖÜ„])/);if(parts.length<2)return null;
+  var lo=0;for(var n=parts.length-1;n>=1;n--){el.innerHTML=parts.slice(0,n).join(' ');if(fits(pc)){lo=n;break}}
+  if(!lo){el.innerHTML=parts.join(' ');return null}
+  var head=el.outerHTML,rest=document.createElement('p');rest.className=el.className.replace('drop','').trim();rest.innerHTML=parts.slice(lo).join(' ');
+  return[head,rest.outerHTML]}
+function flowPages(blocks,startIdx,cls){var out=[],curB=[],pc=prepMeasure(startIdx,cls);
+  blocks=blocks.slice();
+  for(var bi=0;bi<blocks.length;bi++){var b=blocks[bi];var w=document.createElement('div');w.innerHTML=b;var el=w.firstElementChild;pc.appendChild(el);
+    if(!fits(pc)&&curB.length){var sp=splitPara(pc,el);if(sp){curB.push(sp[0]);blocks.splice(bi+1,0,sp[1]);out.push(curB);curB=[];pc=prepMeasure(startIdx+out.length,cls);continue}
+      pc.removeChild(el);var carry=[];
+      while(curB.length>1){var last=curB[curB.length-1];var tmp=document.createElement('div');tmp.innerHTML=last;var f=tmp.firstElementChild;if(HEADTAG.test(f.tagName)||f.classList.contains('ey')){carry.unshift(curB.pop())}else break}
+      out.push(curB);curB=carry.slice();pc=prepMeasure(startIdx+out.length,cls);carry.forEach(function(h){var t=document.createElement('div');t.innerHTML=h;pc.appendChild(t.firstElementChild)});pc.appendChild(el);
+      if(!fits(pc)){var sp2=splitPara(pc,el);if(sp2){curB.push(sp2[0]);blocks.splice(bi+1,0,sp2[1]);out.push(curB);curB=[];pc=prepMeasure(startIdx+out.length,cls);continue}}}
+    curB.push(el.outerHTML)}
+  if(curB.length)out.push(curB);return out.map(function(a){return a.join('')})}
+
+function paginate(){pages=[];keyPage={};var spread=mode==='spread';
+  function add(p){pages.push(p);return pages.length-1}
+  function isRight(){return pages.length%2===0}
+  function filler(){add({html:STAR,cls:'filler',bare:1,key:'f'+pages.length})}
+  SECTIONS.forEach(function(sec){
+    if(sec.kind==='cover'){keyPage.cover=add({html:coverHTML(),cls:'cover',bare:1,key:'cover'});return}
+    if(sec.kind==='back'){if(spread&&isRight())filler();keyPage.back=add({html:backHTML(),cls:'backc',bare:1,key:'back'});return}
+    if(sec.kind==='flow'){if(spread&&sec.right&&!isRight())filler();keyPage[sec.key]=pages.length;
+      flowPages(sec.blocks,pages.length,'').forEach(function(h,j){add({html:h,head:sec.head,key:sec.key+'-'+j})});return}
+    if(sec.kind==='card'){if(spread&&isRight())filler();var c=sec.c;keyPage[c.id]=add({html:artHTML(sec),cls:'art',head:sec.head,key:c.id+'-a',nohead:1});
+      var bl=ctBlocks(sec),done=false,scales=[1,.96,.92];
+      for(var s=0;s<scales.length&&!done;s++){var pc=prepMeasure(pages.length,'ct');pc.style.fontSize=scales[s]+'em';pc.innerHTML=bl.join('');
+        if(fits(pc)){add({html:'<div style="font-size:'+scales[s]+'em">'+bl.join('')+'</div>',cls:'ct',head:sec.head,key:c.id+'-t'});done=true}}
+      if(!done){
+        /* Zu viel für eine Seite: Text fließt weiter, Frage und Impuls bekommen eine eigene, ruhige Seite */
+        var body=bl.slice(0,-2),tp=flowPages(body,pages.length,'ct');
+        if(tp.length===1){[.88,.85].forEach(function(sc2){if(done)return;var pc2=prepMeasure(pages.length,'ct');pc2.style.fontSize=sc2+'em';pc2.innerHTML=bl.join('');
+          if(fits(pc2)){add({html:'<div style="font-size:'+sc2+'em">'+bl.join('')+'</div>',cls:'ct',head:sec.head,key:c.id+'-t'});done=true}})}
+        if(done)return;
+        tp.forEach(function(h,j){add({html:h,cls:'ct',head:sec.head,key:c.id+'-t'+j})});
+        if(spread&&!isRight())filler();
+        add({html:askHTML(sec),cls:'askp',head:sec.head,key:c.id+'-q'})}}
+  });
+  /* Seitenzahlen ins Inhaltsverzeichnis */
+  pages.forEach(function(p){if(p.html.indexOf('{{')>-1)p.html=p.html.replace(/\{\{(\w+)\}\}/g,function(m,k){return keyPage[k]!=null?keyPage[k]:''})});
+  measure.innerHTML='';
+}
+
+function shell(i){var p=pages[i];if(!p)return '';var side=sideOf(i);
+  var hard=(p.cls==='cover'||p.cls==='backc')?' data-density="hard"':'';
+  var h='<div class="page '+side+' '+(p.cls||'')+'"'+hard+'>';
+  if(!p.bare&&!p.nohead)h+='<div class="rh">'+(side==='left'?'Kartenreich':esc(p.head||''))+'</div>';
+  h+='<div class="pc">'+p.html+'</div>';
+  if(!p.bare)h+='<div class="pn">'+i+'</div>';
+  return h+'</div>'}
+function blankShell(){return '<div class="page blank single"></div>'}
+
+/* ===================== Ansicht und Blättern =====================
+   Echtes Umblättern mit StPageFlip (Seite an der Ecke greifen, ziehen, Papier biegt sich).
+   Fehlt die Bibliothek (z. B. offline beim ersten Start), blättert eine einfache Ersatzansicht. */
+var PF=null,LIB=!!(window.St&&window.St.PageFlip);
+function visibleIdx(){var L=pages.length;if(mode==='single')return[cur];if(cur<=0)return[0];var l=cur%2?cur:cur-1;return[l,l+1].filter(function(i){return i<L})}
+function preload(v){for(var d=1;d<=4;d++){[v[0]-d,v[v.length-1]+d].forEach(function(i){var p=pages[i];if(p&&p.cls==='art'){var m=p.html.match(/src="([^"]+)"/);if(m){var im=new Image();im.src=m[1]}}})}}
+function ui(){var v=visibleIdx(),last=pages.length-1;
+  book.classList.toggle('closed',mode==='spread'&&v.length===1&&v[0]===0);
+  $('#tilt').classList.toggle('closed',mode==='spread'&&v.length===1&&v[0]===0);
+  $('#tilt').classList.toggle('closedR',mode==='spread'&&v.length===1&&v[0]!==0);
+  book.classList.toggle('closedR',mode==='spread'&&v.length===1&&v[0]!==0);
+  $('#seek').max=last;$('#seek').value=v[0];
+  $('#pnum').textContent=(v.length>1?'Seiten '+v[0]+'–'+v[1]:'Seite '+v[0])+' von '+last;
+  $('#prev').disabled=v[0]<=0;$('#next').disabled=v[v.length-1]>=last;
+  var p=pages[v[v.length-1]];if(p)store.set('kr_buch_pos',p.key);
+  preload(v)}
+function renderStatic(){var v=visibleIdx();
+  if(mode==='spread'){slotL.innerHTML=v[0]>0?shell(v[0]):'';slotR.innerHTML=v[0]===0?shell(0):(v[1]!=null?shell(v[1]):'')}
+  else{slotL.innerHTML='';slotR.innerHTML=shell(cur)}}
+function buildBook(start){
+  if(PF){try{PF.destroy()}catch(e){}PF=null}
+  book.innerHTML='<div class="board" aria-hidden="true"></div><div class="ribbon" aria-hidden="true"></div>';book.className=mode==='single'?'single':'';
+  cur=Math.max(0,Math.min(pages.length-1,start||0));
+  if(!LIB){slotL=document.createElement('div');slotL.className='slot l';slotR=document.createElement('div');slotR.className='slot r';book.appendChild(slotL);book.appendChild(slotR);renderStatic();ui();return}
+  var root=document.createElement('div');root.id='pf';book.appendChild(root);
+  root.innerHTML=pages.map(function(p,i){return shell(i)}).join('');
+  PF=new St.PageFlip(root,{width:PW,height:PH,size:'fixed',autoSize:true,showCover:true,usePortrait:mode==='single',
+    drawShadow:true,maxShadowOpacity:.85,flippingTime:1250,mobileScrollSupport:false,swipeDistance:20,startPage:cur,startZIndex:2,showPageCorners:true});
+  PF.on('init',function(e){cur=e.data.page;ui()});
+  var lastCur=cur;
+  PF.on('flip',function(e){var dir=e.data>lastCur?1:-1;lastCur=e.data;cur=e.data;ui();
+    var r=book.getBoundingClientRect();Dust.edge(dir>0?r.left+(mode==='spread'?r.width*.06:r.width*.04):r.right-r.width*.06,r.top+r.height*.08,r.bottom-r.height*.08)});
+  PF.on('changeState',function(e){if(e.data==='flipping')Sound.swish();Float.hold(e.data!=='read')});
+  var items=root.querySelectorAll('.page');
+  (PF.loadFromHTML||PF.loadFromHtml).call(PF,items);
+  ui()}
+function go(dir){
+  if(PF){if(dir>0)PF.flipNext('bottom');else PF.flipPrev('bottom');return}
+  var v=visibleIdx(),t;
+  if(mode==='single')t=cur+dir;else t=dir>0?(v[0]===0?1:v[0]+2):(v[0]<=1?0:v[0]-2);
+  if(t<0||t>pages.length-1)return;cur=t;Sound.swish();renderStatic();ui()}
+function gotoIdx(idx,sparkle){if(idx==null)return;idx=Math.max(0,Math.min(pages.length-1,idx));
+  if(PF){PF.turnToPage(idx);cur=idx;ui()}else{cur=idx;renderStatic();ui()}
+  if(sparkle){var r=book.getBoundingClientRect();Dust.burst(r.left+r.width/2,r.top+r.height/2)}}
+
+/* ===================== Schweben in 3D =====================
+   Das Buch schwebt sanft und neigt sich leicht. Sobald man es berührt oder blättert,
+   legt es sich flach hin, damit das Greifen der Ecken genau stimmt. */
+var Float=(function(){var tilt=$('#tilt'),ground=$('#ground'),sheen=tilt.querySelector('.sheen'),k=RM?0:1,target=RM?0:1,tm=0,raf=0,mx=0,my=0,tx=0,ty=0;
+  addEventListener('pointermove',function(e){if(e.pointerType!=='mouse')return;tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2},{passive:true});
+  function frame(t){raf=requestAnimationFrame(frame);k+=(target-k)*.05;mx+=(tx-mx)*.03;my+=(ty-my)*.03;var s=t/1000;
+    if(k<.002&&target===0){tilt.style.transform='none';ground.style.transform='translateX(-50%)';ground.style.opacity='.6';sheen.style.opacity='0';return}
+    var y=-9*Math.sin(s*2*Math.PI/9)*k,
+        rx=(8+1.6*Math.sin(s*2*Math.PI/11)-my*3)*k,
+        ry=(2.6*Math.sin(s*2*Math.PI/13)+mx*6)*k,
+        rz=(.5*Math.sin(s*2*Math.PI/17))*k;
+    tilt.style.transform='translateY('+y.toFixed(2)+'px) rotateX('+rx.toFixed(3)+'deg) rotateY('+ry.toFixed(3)+'deg) rotateZ('+rz.toFixed(3)+'deg)';
+    ground.style.transform='translateX(calc(-50% + '+(ry*3).toFixed(1)+'px)) scale('+(1+y/80).toFixed(3)+','+(1+y/60).toFixed(3)+')';ground.style.opacity=(.7+y/40).toFixed(3);
+    sheen.style.opacity=(.55*k).toFixed(3);sheen.style.backgroundPosition=(50-ry*9).toFixed(1)+'% 0'}
+  function hold(on){if(RM)return;clearTimeout(tm);if(on){target=0}else{tm=setTimeout(function(){target=1},1800)}}
+  var bk=$('#book');
+  bk.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')hold(true)});
+  bk.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')hold(false)});
+  bk.addEventListener('pointerdown',function(e){if(e.pointerType!=='mouse'){hold(true);clearTimeout(tm);tm=setTimeout(function(){target=1},6000)}});
+  document.addEventListener('visibilitychange',function(){if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf&&!RM)raf=requestAnimationFrame(frame)});
+  return{start:function(){if(!RM&&!raf)raf=requestAnimationFrame(frame)},hold:hold,
+    flyIn:function(){if(RM)return;$('#fly').animate([{transform:'translateY(80px) translateZ(-900px) rotateX(32deg) rotateZ(-5deg)',opacity:0},{transform:'translateY(0) translateZ(0) rotateX(0) rotateZ(0)',opacity:1}],{duration:1900,easing:'cubic-bezier(.16,.8,.3,1)'})}};
+})();
+
+/* ===================== Zoom ===================== */
+var Z=1.6;
+function zApply(keepCenter){var a=$('#zArea'),inner=$('#zInner'),sz=$('#zSizer'),n=inner.children.length||1;
+  var cx=keepCenter?(a.scrollLeft+a.clientWidth/2)/Math.max(1,sz.offsetWidth):.5,cy=keepCenter?(a.scrollTop+a.clientHeight/2)/Math.max(1,sz.offsetHeight):0;
+  inner.style.transform='scale('+Z+')';sz.style.width=(n*PW*Z)+'px';sz.style.height=(PH*Z)+'px';
+  $('#zPct').textContent=Math.round(Z*100)+' %';
+  a.scrollLeft=cx*sz.offsetWidth-a.clientWidth/2;a.scrollTop=cy*sz.offsetHeight-(keepCenter?a.clientHeight/2:0)}
+function zSet(z){Z=Math.max(1,Math.min(3.2,z));zApply(true)}
+function zFill(){var v=visibleIdx(),last=pages.length-1;$('#zInner').innerHTML=v.map(function(i){return shell(i)}).join('');
+  $('#zPn').textContent=(v.length>1?'Seiten '+v[0]+'–'+v[1]:'Seite '+v[0])+' von '+last;
+  $('#zPrev').disabled=v[0]<=0;$('#zNext').disabled=v[v.length-1]>=last}
+function openZoom(){zFill();openOv('#zoomOv');Z=mode==='single'?1.5:1.35;zApply(false)}
+/* Im Zoom weiterblättern: Buch dahinter springt mit, Vergrößerung bleibt */
+function zStep(dir){var v=visibleIdx(),t;
+  if(mode==='single')t=cur+dir;else t=dir>0?(v[0]===0?1:v[0]+2):(v[0]<=1?0:v[0]-2);
+  if(t<0||t>pages.length-1)return;Sound.swish();gotoIdx(t);
+  var inner=$('#zInner'),a=$('#zArea');
+  if(!RM)inner.animate([{opacity:1,transform:'scale('+Z+') translateX(0)'},{opacity:0,transform:'scale('+Z+') translateX('+(dir>0?-40:40)+'px)'}],{duration:220,easing:'ease-in'}).finished.then(function(){
+    zFill();a.scrollTop=0;inner.animate([{opacity:0,transform:'scale('+Z+') translateX('+(dir>0?40:-40)+'px)'},{opacity:1,transform:'scale('+Z+') translateX(0)'}],{duration:320,easing:'ease-out'})});
+  else{zFill();a.scrollTop=0}}
+$('#zPrev').onclick=function(){zStep(-1)};$('#zNext').onclick=function(){zStep(1)};
+$('#bZoom').onclick=openZoom;
+$('#zIn').onclick=function(){zSet(Z+.25)};$('#zOut').onclick=function(){zSet(Z-.25)};
+(function(){var a=$('#zArea'),pts={},d0=0,z0=1,drag=null;
+  a.addEventListener('wheel',function(e){if(!e.ctrlKey)return;e.preventDefault();zSet(Z*(e.deltaY<0?1.1:1/1.1))},{passive:false});
+  a.addEventListener('pointerdown',function(e){pts[e.pointerId]={x:e.clientX,y:e.clientY};var k=Object.keys(pts);
+    if(k.length===2){var p=pts[k[0]],q=pts[k[1]];d0=Math.hypot(p.x-q.x,p.y-q.y);z0=Z;drag=null}
+    else if(e.pointerType==='mouse'){drag={x:e.clientX,y:e.clientY,l:a.scrollLeft,t:a.scrollTop};a.style.cursor='grabbing'}});
+  a.addEventListener('pointermove',function(e){if(!pts[e.pointerId])return;pts[e.pointerId]={x:e.clientX,y:e.clientY};var k=Object.keys(pts);
+    if(k.length===2&&d0){var p=pts[k[0]],q=pts[k[1]];zSet(z0*Math.hypot(p.x-q.x,p.y-q.y)/d0)}
+    else if(drag){a.scrollLeft=drag.l-(e.clientX-drag.x);a.scrollTop=drag.t-(e.clientY-drag.y)}});
+  /* Wischen mit einem Finger blättert, wenn die Seite nicht gerade seitlich verschoben werden kann */
+  var sw=null;a.addEventListener('touchstart',function(e){sw=e.touches.length===1?{x:e.touches[0].clientX,y:e.touches[0].clientY,l:a.scrollLeft,t:Date.now()}:null},{passive:true});
+  a.addEventListener('touchend',function(e){if(!sw||!e.changedTouches.length)return;var dx=e.changedTouches[0].clientX-sw.x,dy=e.changedTouches[0].clientY-sw.y,max=a.scrollWidth-a.clientWidth;
+    var atEdge=dx<0?a.scrollLeft>=max-2:a.scrollLeft<=2;if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4&&Date.now()-sw.t<700&&atEdge&&sw.l===a.scrollLeft)zStep(dx<0?1:-1);sw=null},{passive:true});
+  function up(e){delete pts[e.pointerId];if(Object.keys(pts).length<2)d0=0;drag=null;a.style.cursor=''}
+  a.addEventListener('pointerup',up);a.addEventListener('pointercancel',up);a.addEventListener('pointerleave',up)})();
+
+/* ===================== Größe und Umbruch ===================== */
+function layout(){var bar=$('.bar').offsetHeight,ctrl=$('.ctrl').offsetHeight,vw=innerWidth,vh=innerHeight;
+  var availH=Math.max(160,vh-bar-ctrl-64),availW=Math.max(200,vw-(vw>=900?120:44)),spread=vw>=900&&vw/Math.max(availH,1)>1.12,W,H;
+  if(spread){W=Math.min(availW/2,availH*.7);H=W/.7}
+  else{W=Math.min(availW,520);H=Math.min(availH,W/.62);if(H<W*1.25){H=availH;W=Math.min(W,H*.7)}}
+  /* Mindestgröße: kleiner wird nur verkleinert dargestellt, nicht neu umbrochen */
+  var minW=spread?400:320,minH=spread?572:500,sc=1;
+  if(W<minW||H<minH){var k=Math.max(minW/W,minH/H);W*=k;H*=k;sc=Math.max(.2,Math.min(availH/H,(spread?availW/2:availW)/W,1))}
+  W=Math.floor(W);H=Math.floor(H);
+  $('#float').style.transform='translate(-50%,-50%)'+(sc<1?' scale('+sc.toFixed(3)+')':'');
+  $('#tilt').classList.toggle('single',!spread);
+  var fs=spread?W*.0335:Math.max(14.5,W*.044);
+  var newMode=spread?'spread':'single',changed=newMode!==mode||W!==PW||H!==PH;
+  mode=newMode;PW=W;PH=H;
+  var rs=document.documentElement.style;rs.setProperty('--pw',W+'px');rs.setProperty('--ph',H+'px');rs.setProperty('--fs',fs.toFixed(2)+'px');
+  return changed}
+function relayout(){var key=(pages[visibleIdx().slice(-1)[0]]||{}).key;
+  if(!layout()&&pages.length)return;
+  paginate();var idx=0;if(key){for(var i=0;i<pages.length;i++)if(pages[i].key===key){idx=i;break}
+    if(!idx){var base=String(key).split('-')[0];if(keyPage[base]!=null)idx=keyPage[base]}}
+  buildBook(idx)}
+
+/* ===================== Inhalt-Fenster ===================== */
+function buildToc(){$('#chaps').innerHTML=CHAPS.map(function(c){return '<button type="button" data-go="'+c[2]+'"><b>'+(c[0]||'✦')+'</b>'+c[1]+'</button>'}).join('');
+  var h='<p class="grp">Große Arkana</p><div class="thumbs">'+KR.arkana.map(th).join('')+'</div>';
+  SUITS.forEach(function(s){h+='<p class="grp">'+s.name+'</p><div class="thumbs">'+s.karten.map(th).join('')+'</div>'});
+  $('#thumbs').innerHTML=h;
+  function th(c){return '<button type="button" data-go="'+c.id+'"><img src="cards/t/'+c.id+'.webp" alt="" loading="lazy" decoding="async">'+esc(c.name)+'</button>'}}
+function openOv(id){var o=$(id);o.hidden=false;var b=o.querySelector('.x');if(b)b.focus()}
+function closeOv(o){o.hidden=true}
+document.addEventListener('click',function(e){var g=e.target.closest('[data-go]');if(g){var o=g.closest('.ov');if(o)closeOv(o);gotoIdx(keyPage[g.dataset.go],true);return}
+  var x=e.target.closest('[data-close]');if(x){closeOv(x.closest('.ov'));return}
+  if(e.target.classList&&e.target.classList.contains('ov')&&e.target.id!=='intro')closeOv(e.target)});
+$('#bToc').onclick=function(){openOv('#tocOv')};
+$('#bSnd').onclick=function(){openOv('#sndOv')};
+$('#bFs').onclick=function(){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(function(){})}catch(e){}};
+$('#prev').onclick=function(){go(-1)};$('#next').onclick=function(){go(1)};
+$('#seek').oninput=function(e){gotoIdx(+e.target.value)};
+addEventListener('keydown',function(e){if(!$('#intro').hidden)return;var ov=document.querySelector('.ov:not([hidden])');
+  if(ov){if(e.key==='Escape')closeOv(ov);
+    else if(ov.id==='zoomOv'){if(e.key==='+'||e.key==='=')zSet(Z+.25);else if(e.key==='-')zSet(Z-.25);
+      else if(e.key==='ArrowRight'||e.key==='PageDown'){e.preventDefault();zStep(1)}else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();zStep(-1)}}
+    return}
+  if(e.key==='+'){openZoom();return}
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();go(1)}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();go(-1)}
+  else if(e.key==='Home'){gotoIdx(0)}else if(e.key==='End'){gotoIdx(pages.length-1)}});
+/* Wischen (nur Ersatzansicht; mit der Bibliothek greift man die Seite direkt) */
+if(!LIB)(function(){var sx=0,sy=0,t0=0,on=false;var st=$('#stage');
+  st.addEventListener('pointerdown',function(e){if(e.target.closest('button'))return;on=true;sx=e.clientX;sy=e.clientY;t0=Date.now()});
+  st.addEventListener('pointerup',function(e){if(!on)return;on=false;var dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3&&Date.now()-t0<900){go(dx<0?1:-1);return}
+    if(Math.abs(dx)<8&&Math.abs(dy)<8&&e.pointerType==='mouse'){var r=book.getBoundingClientRect();if(e.clientX>r.left+r.width*.82)go(1);else if(e.clientX<r.left+r.width*.18)go(-1)}});
+  st.addEventListener('pointercancel',function(){on=false})})();
+addEventListener('hashchange',function(){var h=location.hash.slice(1);if(keyPage[h]!=null)gotoIdx(keyPage[h],true)});
+var rt=0;addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(function(){relayout()},220)});
+
+/* ===================== Start ===================== */
+function openBook(withMusic){var o=$('#intro');if(o.hidden)return;if(withMusic)Sound.play();
+  o.style.transition='opacity .7s';o.style.opacity='0';setTimeout(function(){o.hidden=true;o.style.opacity=''},700);
+  Float.flyIn();
+  setTimeout(function(){if(cur===0)go(1)},2100)}
+$('#openMusic').onclick=function(){openBook(true)};
+$('#openQuiet').onclick=function(){openBook(false)};
+
+function boot(){SECTIONS=sections();buildToc();layout();paginate();
+  var hash=location.hash.slice(1),idx=null;
+  if(hash&&keyPage[hash]!=null)idx=keyPage[hash];
+  else{var k=store.get('kr_buch_pos',null);if(k){for(var i=0;i<pages.length;i++)if(pages[i].key===k){idx=i;break}}}
+  if(/[?&]lesen/.test(location.search))$('#intro').hidden=true;
+  if(idx)$('#openQuiet').textContent='Ohne Musik weiterlesen';
+  buildBook(idx||0);Dust.start();Float.start()}
+/* ===================== Als App installieren ===================== */
+(function(){var deferred=null,btn=$('#bApp'),steps=$('#appSteps');
+  var standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+  var ios=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if('serviceWorker' in navigator&&location.protocol!=='file:'){navigator.serviceWorker.register('sw.js').catch(function(){})}
+  if(standalone)return;
+  btn.hidden=false;
+  addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e});
+  addEventListener('appinstalled',function(){btn.hidden=true;closeOv($('#appOv'))});
+  btn.onclick=function(){
+    if(deferred){deferred.prompt();deferred.userChoice.then(function(){deferred=null});return}
+    var h;
+    if(ios)h='<ol class="steps" style="margin:0"><li><div><b>Teilen antippen.</b> Unten in Safari das Quadrat mit dem Pfeil nach oben.</div></li><li><div><b>„Zum Home-Bildschirm“</b> wählen.</div></li><li><div><b>„Hinzufügen“</b> tippen. Das Kartenreich-Icon liegt jetzt auf deinem Startbildschirm.</div></li></ol>';
+    else h='<ol class="steps" style="margin:0"><li><div><b>Chrome oder Edge:</b> Oben in der Adresszeile auf das Symbol mit dem kleinen Bildschirm und Pfeil klicken, oder im Menü (⋮ bzw. …) „Kartenreich Buch installieren“ bzw. „Apps → Diese Seite als App installieren“ wählen.</div></li><li><div><b>Android:</b> Im Browser-Menü „App installieren“ oder „Zum Startbildschirm hinzufügen“ antippen.</div></li><li><div>Danach liegt das Icon auf deinem Desktop bzw. Startbildschirm.</div></li></ol>';
+    steps.innerHTML=h;openOv('#appOv')};
+})();
+
+var fl=[];try{fl=[document.fonts.load('600 2em "Cormorant Garamond"'),document.fonts.load('1em Lora'),document.fonts.load('italic 1em Lora'),document.fonts.load('600 1em Lora')]}catch(e){}
+Promise.race([Promise.all(fl).then(function(){return document.fonts.ready}),new Promise(function(r){setTimeout(r,2500)})]).then(boot,boot);
+})();
+</script>
+</body>
+</html>
