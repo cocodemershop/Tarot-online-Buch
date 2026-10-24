@@ -2,7 +2,7 @@
 window.KR = window.KR || {};
 KR.kelche = {
 key:"s1",name:"Kelche",element:"Wasser",thema:"Gefühle, Beziehungen, Intuition, Sehnsucht",
-intro:"Die Kelche sind die Wasserkarten, und in eurem Deck sieht man das sofort: Seen, Flüsse, Wasserfälle, Muscheln, Fische und ein tiefes Nachtblau, das sich durch die ganze Reihe zieht. Die Kelche sind fast immer golden und reich verziert. Diese Farbe erzählt von allem, was du fühlst: Liebe, Freundschaft, Trauer, Sehnsucht, Träume und Mitgefühl. Wenn in einer Legung viele Kelche liegen, will dein Herz gehört werden.",
+intro:"Die Kelche sind die Wasserkarten, und in deinem Deck sieht man das sofort: Seen, Flüsse, Wasserfälle, Muscheln, Fische und ein tiefes Nachtblau, das sich durch die ganze Reihe zieht. Die Kelche sind fast immer golden und reich verziert. Diese Farbe erzählt von allem, was du fühlst: Liebe, Freundschaft, Trauer, Sehnsucht, Träume und Mitgefühl. Wenn in einer Legung viele Kelche liegen, will dein Herz gehört werden.",
 frage:"Was fühlst du wirklich, und was brauchst du?",
 karten:[
 {id:"s1_0",nr:"Ass",name:"Ass der Kelche",wort:"Herzöffnung",
@@ -28,7 +28,7 @@ frage:"Wer sind die Menschen, mit denen du feiern möchtest?",
 impuls:"Melde dich bei einer Freundin oder einem Freund, die oder den du lange nicht gesehen hast."},
 {id:"s1_3",nr:"IV",name:"Vier der Kelche",wort:"Neubetrachtung",
 bild:"Ein junger Mann sitzt unter einem großen Baum, die Arme auf den Knien, und schaut nachdenklich zu Boden. Vor ihm stehen drei goldene Kelche. Von rechts reicht eine Hand aus einer Wolke einen vierten, leuchtenden Kelch. Er bemerkt ihn nicht.",
-kern:"Unzufriedenheit, Rückzug, Grübeln. Der Mann ist so sehr mit dem beschäftigt, was ihm fehlt, dass er das Angebot neben sich übersieht. Euer Deck nennt die Karte Neubetrachtung, und das ist die Einladung: einmal den Kopf heben und neu hinsehen.",
+kern:"Unzufriedenheit, Rückzug, Grübeln. Der Mann ist so sehr mit dem beschäftigt, was ihm fehlt, dass er das Angebot neben sich übersieht. Dein Deck nennt die Karte Neubetrachtung, und das ist die Einladung: einmal den Kopf heben und neu hinsehen.",
 licht:"Innehalten, Bestandsaufnahme, sich Zeit nehmen, um herauszufinden, was man wirklich will.",
 schatten:"Lustlosigkeit, Apathie, verpasste Chancen aus reiner Gewohnheit.",
 frage:"Welches Angebot steht neben dir, das du noch nicht bemerkt hast?",

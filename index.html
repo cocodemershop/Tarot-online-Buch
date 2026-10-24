@@ -274,6 +274,15 @@ label.chk input{accent-color:var(--gold);width:18px;height:18px}
 @media (max-height:700px){.intro{gap:.6rem}.intro img{width:min(110px,30vw)}.intro h1{font-size:2.4rem}}
 #measure{position:fixed;left:-99999px;top:0;width:var(--pw);height:var(--ph);visibility:hidden;pointer-events:none}
 @media (prefers-reduced-motion:reduce){.intro img{animation:none}}
+/* WebKit-Härtung (Safari auf Mac, iPad, iPhone) */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+@supports (height:100dvh){html,body{height:100dvh}}
+#stage,.stf__parent{touch-action:none}
+.wk #stage{perspective:none}
+.wk #float{perspective:none;transform-style:flat}
+.wk #fly,.wk #tilt{transform-style:flat;will-change:auto}
+.wk .edge,.wk .sheen{display:none}
+.wk #ground{filter:none}
 </style>
 </head>
 <body>
@@ -453,7 +462,7 @@ label.chk input{accent-color:var(--gold);width:18px;height:18px}
   <p class="sub">Die Reise vom Narren zur Welt</p>
   <p class="drop">Die Großen Arkana lassen sich wie eine Geschichte lesen. Am Anfang steht der Narr, Karte 0, mit seinem kleinen Bündel und seinem weißen Hund. Er hat noch keine Nummer, weil er überall sein kann.</p>
   <p>Auf seinem Weg begegnet er zuerst den großen Lehrern. Der Magier zeigt ihm, was er kann, die Hohepriesterin, was er ahnt. Herrscherin und Herrscher stehen für Wachstum und Ordnung, der Hierophant für das Überlieferte. Dann muss der Narr selbst wählen, bei den Liebenden, und losfahren, im Wagen.</p>
-  <p>In der Mitte wird es stiller und tiefer: Kraft, Eremit, Schicksalsrad, Gerechtigkeit und der Gehängte. Dann kommen die großen Verwandlungen: der Tod, der in deinem Deck in den Sonnenaufgang reitet, die Mäßigkeit, der Teufel, den euer Deck Befreiung nennt, und der Turm als Leuchtturm im Gewitter.</p>
+  <p>In der Mitte wird es stiller und tiefer: Kraft, Eremit, Schicksalsrad, Gerechtigkeit und der Gehängte. Dann kommen die großen Verwandlungen: der Tod, der in deinem Deck in den Sonnenaufgang reitet, die Mäßigkeit, der Teufel, den dein Deck Befreiung nennt, und der Turm als Leuchtturm im Gewitter.</p>
   <p>Nach dem Sturm folgen die Lichtkarten: Stern, Mond und Sonne. Zuletzt ruft der Engel des Gerichts zum Neuanfang, und in der Welt schließt sich der Kreis.</p>
   <p class="q">Wo auf dieser Reise stehst du gerade?</p>
 </template>
@@ -505,6 +514,8 @@ label.chk input{accent-color:var(--gold);width:18px;height:18px}
 <script>
 (function(){
 "use strict";
+var UA=navigator.userAgent,WK=/iP(hone|ad|od)/.test(UA)||(/Macintosh/.test(UA)&&navigator.maxTouchPoints>1)||(/Safari/.test(UA)&&!/Chrome|Chromium|CriOS|FxiOS|Edg|OPR|Android/.test(UA));
+if(WK)document.documentElement.classList.add('wk');
 var $=function(s){return document.querySelector(s)};
 var RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 var store={get:function(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set:function(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
@@ -566,7 +577,7 @@ var Sound=(function(){
   function bell(){if(Math.random()>(M().p||1))return;var t=ac.currentTime,sc=M().sc,f=F(pk(sc)+12*pk(M().o||[1,2])),p=R(-.8,.8);tone(f,"sine",t,.02,.06,R(4,6),bus,p);tone(f*2.01,"sine",t,.02,.015,2.5,bus,p);if(Math.random()<.35)tone(F(pk(sc)+24),"sine",t+R(.4,.9),.02,.035,4,bus,-p)}
   function bowl(){var t=ac.currentTime,f=F(pk(M().sc.slice(0,3))+12);tone(f,"sine",t,1.5,.06,14,bus,-.3);tone(f+R(1,2),"sine",t,1.5,.05,14,bus,.3)}
   function loop(k,fn,a,b){var go=function(){if(!on)return;fn();tm[k]=setTimeout(go,R(a,b)*1000)};go()}
-  function init(){ac=new(window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.gain.value=0;mg.connect(ac.destination);bus=ac.createGain();bus.connect(mg);
+  function init(){ac=ac||new(window.AudioContext||window.webkitAudioContext)();mg=ac.createGain();mg.gain.value=0;mg.connect(ac.destination);bus=ac.createGain();bus.connect(mg);
     var cv=ac.createConvolver(),wg=ac.createGain(),l=ac.sampleRate*5,b=ac.createBuffer(2,l,ac.sampleRate);for(var c=0;c<2;c++){var d=b.getChannelData(c);for(var i=0;i<l;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/l,2.6)}
     cv.buffer=b;wg.gain.value=.7;bus.connect(cv);cv.connect(wg);wg.connect(mg);
     dr=ac.createOscillator();var dg=ac.createGain(),lf=ac.createOscillator(),lg=ac.createGain();dr.frequency.value=F(-12);dg.gain.value=.04;lf.frequency.value=.06;lg.gain.value=.015;lf.connect(lg);lg.connect(dg.gain);dr.connect(dg);dg.connect(bus);dr.start();lf.start();
@@ -574,13 +585,13 @@ var Sound=(function(){
     var ns=ac.createBufferSource();ns.buffer=nb;ns.loop=true;var bp=ac.createBiquadFilter();bp.type="bandpass";bp.frequency.value=600;bp.Q.value=.7;var ng=ac.createGain(),l2=ac.createOscillator(),l2g=ac.createGain();ng.gain.value=.012;l2.frequency.value=.05;l2g.gain.value=300;l2.connect(l2g);l2g.connect(bp.frequency);ns.connect(bp);bp.connect(ng);ng.connect(bus);ns.start();l2.start()}
   function vol(){return S.v/100*.7}
   function ui(){$('#play').textContent=on?'❚❚ Musik pausieren':'▶ Musik beginnen';$('#bSnd').setAttribute('aria-pressed',on)}
-  function play(){try{if(!ac)init();ac.resume();on=true;mg.gain.cancelScheduledValues(ac.currentTime);mg.gain.setTargetAtTime(vol(),ac.currentTime,2);loop("p",pad,8,11);loop("b",bell,2.5,6);loop("w",bowl,20,34)}catch(e){on=false}ui()}
-  function stop(){on=false;Object.keys(tm).forEach(function(k){clearTimeout(tm[k])});tm={};if(ac){mg.gain.setTargetAtTime(0,ac.currentTime,.8);setTimeout(function(){if(!on)ac.suspend()},3500)}ui()}
+  function play(){try{if(!mg)init();ac.resume();on=true;mg.gain.cancelScheduledValues(ac.currentTime);mg.gain.setTargetAtTime(vol(),ac.currentTime,2);loop("p",pad,8,11);loop("b",bell,2.5,6);loop("w",bowl,20,34)}catch(e){on=false}ui()}
+  function stop(){on=false;Object.keys(tm).forEach(function(k){clearTimeout(tm[k])});tm={};if(ac&&mg){mg.gain.setTargetAtTime(0,ac.currentTime,.8);setTimeout(function(){if(!on)ac.suspend()},3500)}ui()}
   function save(){store.set('kr_buch_snd',S)}
-  function swish(){if(!S.sw)return;try{if(!ac){init();ac.resume()}if(ac.state==='suspended')ac.resume();var t=ac.currentTime,len=ac.sampleRate*.45,b=ac.createBuffer(1,len,ac.sampleRate),d=b.getChannelData(0);for(var i=0;i<len;i++){var k=i/len;d[i]=(Math.random()*2-1)*Math.sin(Math.PI*k)*Math.pow(1-k,.6)}
+  function swish(){if(!S.sw)return;try{if(!ac)ac=new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();var t=ac.currentTime,len=ac.sampleRate*.45,b=ac.createBuffer(1,len,ac.sampleRate),d=b.getChannelData(0);for(var i=0;i<len;i++){var k=i/len;d[i]=(Math.random()*2-1)*Math.sin(Math.PI*k)*Math.pow(1-k,.6)}
     var s=ac.createBufferSource();s.buffer=b;var f=ac.createBiquadFilter();f.type='bandpass';f.frequency.setValueAtTime(900,t);f.frequency.linearRampToValueAtTime(2600,t+.4);f.Q.value=.8;var g=ac.createGain();g.gain.value=.05;s.connect(f);f.connect(g);g.connect(ac.destination);s.start(t)}catch(e){}}
   $('#moods').innerHTML=MD.map(function(m,i){return '<button type="button" data-i="'+i+'" aria-pressed="'+(i===S.m)+'">'+m.n+'<small>'+m.d+'</small></button>'}).join('');
-  $('#moods').onclick=function(e){var b=e.target.closest('button');if(!b)return;S.m=+b.dataset.i;save();$('#moods').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});if(ac)dr.frequency.setTargetAtTime(F(-12),ac.currentTime,3);if(!on)play()};
+  $('#moods').onclick=function(e){var b=e.target.closest('button');if(!b)return;S.m=+b.dataset.i;save();$('#moods').querySelectorAll('button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});if(dr)dr.frequency.setTargetAtTime(F(-12),ac.currentTime,3);if(!on)play()};
   $('#vol').value=S.v;$('#vol').oninput=function(e){S.v=+e.target.value;save();if(ac&&on)mg.gain.setTargetAtTime(vol(),ac.currentTime,.3)};
   $('#play').onclick=function(){on?stop():play()};
   $('#swish').checked=!!S.sw;$('#swish').onchange=function(e){S.sw=e.target.checked?1:0;save()};
@@ -758,9 +769,9 @@ var Float=(function(){var tilt=$('#tilt'),ground=$('#ground'),sheen=tilt.querySe
   bk.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')hold(true)});
   bk.addEventListener('pointerleave',function(e){if(e.pointerType==='mouse')hold(false)});
   bk.addEventListener('pointerdown',function(e){if(e.pointerType!=='mouse'){hold(true);clearTimeout(tm);tm=setTimeout(function(){target=1},6000)}});
-  document.addEventListener('visibilitychange',function(){if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf&&!RM)raf=requestAnimationFrame(frame)});
-  return{start:function(){if(!RM&&!raf)raf=requestAnimationFrame(frame)},hold:hold,
-    flyIn:function(){if(RM)return;$('#fly').animate([{transform:'translateY(80px) translateZ(-900px) rotateX(32deg) rotateZ(-5deg)',opacity:0},{transform:'translateY(0) translateZ(0) rotateX(0) rotateZ(0)',opacity:1}],{duration:1900,easing:'cubic-bezier(.16,.8,.3,1)'})}};
+  document.addEventListener('visibilitychange',function(){if(document.hidden){cancelAnimationFrame(raf);raf=0}else if(!raf&&!RM&&!WK)raf=requestAnimationFrame(frame)});
+  return{start:function(){if(!RM&&!WK&&!raf)raf=requestAnimationFrame(frame)},hold:hold,
+    flyIn:function(){if(RM)return;if(WK){$('#fly').animate([{transform:'translateY(28px)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:900,easing:'ease-out'});return}$('#fly').animate([{transform:'translateY(80px) translateZ(-900px) rotateX(32deg) rotateZ(-5deg)',opacity:0},{transform:'translateY(0) translateZ(0) rotateX(0) rotateZ(0)',opacity:1}],{duration:1900,easing:'cubic-bezier(.16,.8,.3,1)'})}};
 })();
 
 /* ===================== Zoom ===================== */
@@ -821,8 +832,8 @@ function layout(){var bar=$('.bar').offsetHeight,ctrl=$('.ctrl').offsetHeight,vw
   mode=newMode;PW=W;PH=H;
   var rs=document.documentElement.style;rs.setProperty('--pw',W+'px');rs.setProperty('--ph',H+'px');rs.setProperty('--fs',fs.toFixed(2)+'px');
   return changed}
-function relayout(){var key=(pages[visibleIdx().slice(-1)[0]]||{}).key;
-  if(!layout()&&pages.length)return;
+function relayout(force){var key=(pages[visibleIdx().slice(-1)[0]]||{}).key;
+  if(!layout()&&pages.length&&!force)return;
   paginate();var idx=0;if(key){for(var i=0;i<pages.length;i++)if(pages[i].key===key){idx=i;break}
     if(!idx){var base=String(key).split('-')[0];if(keyPage[base]!=null)idx=keyPage[base]}}
   buildBook(idx)}
@@ -896,7 +907,8 @@ function boot(){SECTIONS=sections();buildToc();layout();paginate();
 })();
 
 var fl=[];try{fl=[document.fonts.load('600 2em "Cormorant Garamond"'),document.fonts.load('1em Lora'),document.fonts.load('italic 1em Lora'),document.fonts.load('600 1em Lora')]}catch(e){}
-Promise.race([Promise.all(fl).then(function(){return document.fonts.ready}),new Promise(function(r){setTimeout(r,2500)})]).then(boot,boot);
+Promise.race([Promise.all(fl).then(function(){return document.fonts.ready}),new Promise(function(r){setTimeout(r,1500)})]).then(boot,boot);
+try{var ft=0;document.fonts.addEventListener('loadingdone',function(){if(!pages.length)return;clearTimeout(ft);ft=setTimeout(function(){relayout(true)},150)})}catch(e){}
 })();
 </script>
 </body>

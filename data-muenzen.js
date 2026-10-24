@@ -2,7 +2,7 @@
 window.KR = window.KR || {};
 KR.muenzen = {
 key:"s3",name:"Münzen",element:"Erde",thema:"Arbeit, Geld, Körper, Zuhause, Sicherheit",
-intro:"Die Münzen sind die Erdkarten. In eurem Deck sind sie große, goldene Scheiben mit Pentagramm oder Lebensbaum. Über vielen Karten schwingt ein Band aus Licht, das wie eine liegende Acht durch die Luft fließt und die Münzen trägt. Die Szenen spielen in Werkstätten, Gärten, Marktplätzen und Burghöfen, mit viel Grün und warmem Gold. Münzen erzählen vom greifbaren Leben: Arbeit, Geld, Gesundheit, Handwerk, Familie und dem, was über Generationen bleibt. Wenn viele Münzen in einer Legung liegen, geht es ums Konkrete.",
+intro:"Die Münzen sind die Erdkarten. In deinem Deck sind sie große, goldene Scheiben mit Pentagramm oder Lebensbaum. Über vielen Karten schwingt ein Band aus Licht, das wie eine liegende Acht durch die Luft fließt und die Münzen trägt. Die Szenen spielen in Werkstätten, Gärten, Marktplätzen und Burghöfen, mit viel Grün und warmem Gold. Münzen erzählen vom greifbaren Leben: Arbeit, Geld, Gesundheit, Handwerk, Familie und dem, was über Generationen bleibt. Wenn viele Münzen in einer Legung liegen, geht es ums Konkrete.",
 frage:"Was ist konkret zu tun, und was gibt dir Halt?",
 karten:[
 {id:"s3_0",nr:"Ass",name:"Ass der Münzen",wort:"Chance",
@@ -35,7 +35,7 @@ frage:"Was hältst du fest, aus Sicherheit oder aus Angst?",
 impuls:"Gib heute bewusst etwas weg: Zeit, Geld oder einen Gegenstand, an dem du nur aus Gewohnheit hängst."},
 {id:"s3_4",nr:"V",name:"Fünf der Münzen",wort:"Durchhaltevermögen",
 bild:"Ein alter Mann mit Krücke und eine junge Frau in abgetragener Kleidung gehen durch eine verschneite Gasse. Sie stützen sich gegenseitig. Hinter ihnen leuchtet ein Kirchenfenster, in dem goldene Münzen schimmern.",
-kern:"Eine harte Zeit. Mangel, Sorge, das Gefühl, draußen zu stehen. Aber euer Deck nennt die Karte Durchhaltevermögen: Die beiden gehen weiter, und sie gehen zu zweit. Das Fenster hinter ihnen ist hell. Hilfe ist näher, als sie gerade sehen.",
+kern:"Eine harte Zeit. Mangel, Sorge, das Gefühl, draußen zu stehen. Aber dein Deck nennt die Karte Durchhaltevermögen: Die beiden gehen weiter, und sie gehen zu zweit. Das Fenster hinter ihnen ist hell. Hilfe ist näher, als sie gerade sehen.",
 licht:"Durchhalten, Zusammenhalt in schwerer Zeit, Hilfe annehmen.",
 schatten:"Sich ausgeschlossen fühlen, Hilfe nicht annehmen können, Sorgen um Geld oder Gesundheit.",
 frage:"Wo ist das helle Fenster, an dem du gerade vorbeigehst?",

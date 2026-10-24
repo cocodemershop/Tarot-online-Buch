@@ -5,10 +5,10 @@ Text und Gestaltung: Frank Zimmermann
 Das digitale Kartenreich-Buch: alle 78 Karten mit Bild, Bedeutung, Licht und Schatten, der Frage der Karte und einem Impuls. Mit echtem Umblättern, Zoom, Klangraum und Installation als App.
 
 ## Sofort ansehen
-ZIP entpacken und `index.html` doppelklicken. Beim ersten Öffnen braucht der Browser Internet (Schriften und die Blätter-Funktion werden geladen).
+ZIP entpacken und `index.html` doppelklicken. Beim ersten Öffnen braucht der Browser Internet für die Schriften. Die Blätter-Funktion liegt im Ordner (`page-flip.browser.js`).
 
 ## Auf GitHub Pages veröffentlichen
-1. Alle Dateien dieses Ordners in ein GitHub-Repository hochladen, am besten in einen eigenen Unterordner, z. B. `buch/` (dann stört es eure bestehende Seite nicht).
+1. Alle Dateien dieses Ordners (96 Dateien, passt in einen Upload) in ein GitHub-Repository hochladen, am besten in einen eigenen Unterordner, z. B. `buch/` (dann stört es eure bestehende Seite nicht). Die versteckte Datei `.nojekyll` gehört dazu.
 2. Im Repository unter **Settings → Pages** die Veröffentlichung aus dem Branch `main` einschalten.
 3. Das Buch ist dann erreichbar unter `https://<name>.github.io/<repo>/buch/`.
 
@@ -24,3 +24,6 @@ Auf der veröffentlichten Seite oben auf **„Als App“** klicken. Chrome und E
 
 ## Bei Änderungen
 Nach dem Ändern von Dateien in `sw.js` die `VERSION` hochzählen, damit installierte Apps die neue Fassung bekommen.
+
+## Hinweis zu Safari (Mac, iPad, iPhone)
+In Safari läuft das Buch ohne die schwebende 3D-Neigung, weil WebKit verschachteltes 3D mit Überblendung und Filtern fehlerhaft darstellt. Blättern, Zoom, Klangraum und App-Installation funktionieren unverändert.

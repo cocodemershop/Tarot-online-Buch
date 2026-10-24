@@ -1,5 +1,5 @@
 ﻿/* Kartenreich Buch: offline lesbar. Bei Änderungen VERSION hochzählen. */
-const VERSION = 'kr-buch-v5';
+const VERSION = 'kr-buch-v7';
 const CORE = [
   './', './index.html', './manifest.webmanifest',
   './page-flip.browser.js',
@@ -21,7 +21,7 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return r; })
+    e.respondWith(fetch(req).then(r => { if (r.redirected) return r.blob().then(b => new Response(b, { status: r.status, statusText: r.statusText, headers: r.headers })); const copy = r.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return r; })
       .catch(() => caches.match('./index.html')));
     return;
   }

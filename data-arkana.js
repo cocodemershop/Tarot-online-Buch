@@ -153,7 +153,7 @@ impuls:"Wähle heute eine Sache, die du bewusst langsamer machst als sonst."},
 
 {id:"g15",nr:"XV",name:"Der Teufel",wort:"Befreiung",
 bild:"Eine dunkle, gehörnte Gestalt mit glühend roten Augen sitzt auf einem schwarzen Thron. Vor ihr kauern ein Mann und eine Frau, beide mit erschrockenen Gesichtern. Ketten liegen um sie herum, und feuriges Licht glimmt an den Rändern. Das Stichwort auf dieser Karte ist bemerkenswert: Befreiung.",
-kern:"Euer Deck gibt dieser Karte das Wort Befreiung, und das trifft ihren Kern. Der Teufel zeigt, was dich festhält: Gewohnheiten, Abhängigkeiten, Ängste, Begierden. Doch die Ketten sind locker. Die beiden Menschen könnten gehen, sie haben es nur noch nicht bemerkt. Wer das Muster erkennt, hat den ersten Schritt aus ihm heraus schon getan.",
+kern:"Dein Deck gibt dieser Karte das Wort Befreiung, und das trifft ihren Kern. Der Teufel zeigt, was dich festhält: Gewohnheiten, Abhängigkeiten, Ängste, Begierden. Doch die Ketten sind locker. Die beiden Menschen könnten gehen, sie haben es nur noch nicht bemerkt. Wer das Muster erkennt, hat den ersten Schritt aus ihm heraus schon getan.",
 licht:"Du erkennst, was dich bindet. Ehrlichkeit über die eigenen Schatten. Der Beginn von Freiheit.",
 schatten:"Abhängigkeit, Zwang, Selbsttäuschung. Etwas hat mehr Macht über dich, als dir lieb ist.",
 liebe:"Starke Anziehung, Leidenschaft, aber auch Muster wie Eifersucht oder Abhängigkeit. Schau ehrlich hin.",
@@ -163,7 +163,7 @@ impuls:"Beobachte heute eine Gewohnheit, ohne sie zu verurteilen. Notiere, wann 
 
 {id:"g16",nr:"XVI",name:"Der Turm",wort:"Durchbruch",
 bild:"Ein alter Leuchtturm auf einer Klippe wird von einem Blitz getroffen. Die Spitze explodiert in Flammen, Steine brechen aus der Mauer und fliegen durch die Luft. Unten schlagen hohe Wellen gegen die Felsen, Menschen am Fuß der Klippe recken die Arme. Am Himmel tobt ein Gewitter, doch dahinter sind noch Sterne zu sehen.",
-kern:"In eurem Deck ist der Turm ein Leuchtturm, und das gibt ihm eine besondere Tiefe. Ein Leuchtturm soll Orientierung geben. Wenn er fällt, fällt eine alte Gewissheit, nach der du dich lange gerichtet hast. Das ist erschütternd. Aber das Stichwort heißt Durchbruch: Was zusammenbricht, war nicht stabil. Und hinter den Gewitterwolken leuchten bereits die Sterne der nächsten Karte.",
+kern:"In deinem Deck ist der Turm ein Leuchtturm, und das gibt ihm eine besondere Tiefe. Ein Leuchtturm soll Orientierung geben. Wenn er fällt, fällt eine alte Gewissheit, nach der du dich lange gerichtet hast. Das ist erschütternd. Aber das Stichwort heißt Durchbruch: Was zusammenbricht, war nicht stabil. Und hinter den Gewitterwolken leuchten bereits die Sterne der nächsten Karte.",
 licht:"Plötzliche Erkenntnis, Befreiung aus falschen Sicherheiten, eine Wahrheit kommt ans Licht.",
 schatten:"Du spürst, dass etwas wackelt, und hältst es mit aller Kraft fest. Je länger, desto heftiger der Fall.",
 liebe:"Eine Illusion zerbricht. Das kann wehtun, schafft aber Platz für etwas Echtes.",

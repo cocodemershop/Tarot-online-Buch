@@ -2,7 +2,7 @@
 window.KR = window.KR || {};
 KR.staebe = {
 key:"s0",name:"Stäbe",element:"Feuer",thema:"Antrieb, Ideen, Mut, Tatkraft",
-intro:"Die Stäbe sind die Feuerkarten. In eurem Deck brennen sie buchstäblich: Fast jeder Stab trägt oben eine Flamme, und in vielen Flammen leuchtet ein goldenes Pentagramm. Die Farben sind Rot, Gold und Purpur, der Himmel glüht oft im Abendlicht. Stäbe erzählen von dem, was dich antreibt: Ideen, Begeisterung, Ehrgeiz, Wettbewerb und der Mut, loszugehen. Wenn in einer Legung viele Stäbe liegen, ist Bewegung im Spiel. Die Frage ist dann nicht ob, sondern wohin.",
+intro:"Die Stäbe sind die Feuerkarten. In deinem Deck brennen sie buchstäblich: Fast jeder Stab trägt oben eine Flamme, und in vielen Flammen leuchtet ein goldenes Pentagramm. Die Farben sind Rot, Gold und Purpur, der Himmel glüht oft im Abendlicht. Stäbe erzählen von dem, was dich antreibt: Ideen, Begeisterung, Ehrgeiz, Wettbewerb und der Mut, loszugehen. Wenn in einer Legung viele Stäbe liegen, ist Bewegung im Spiel. Die Frage ist dann nicht ob, sondern wohin.",
 frage:"Wofür brennst du, und was hält dich davon ab, zu handeln?",
 karten:[
 {id:"s0_0",nr:"Ass",name:"Ass der Stäbe",wort:"Inspiration",
@@ -63,7 +63,7 @@ frage:"Was kommt gerade in Bewegung, ohne dass du es anschieben musst?",
 impuls:"Erledige heute die eine Nachricht oder Rückmeldung, die du schon zu lange aufschiebst."},
 {id:"s0_8",nr:"IX",name:"Neun der Stäbe",wort:"Schutz",
 bild:"Neun mit Runen beschriftete Stäbe kreuzen sich sternförmig im Weltraum. In ihrer Mitte leuchtet ein greller, weißer Lichtpunkt, von dem feine Blitze ausgehen. In den Ecken schweben blaue Geisterwesen, die sich dem Licht zuwenden.",
-kern:"Hier verteidigt kein müder Kämpfer seinen Platz. Euer Deck zeigt die Neun als Schutzkreis: Die Stäbe bilden einen Stern um einen hellen Kern. Was in der Mitte ist, bleibt sicher. Diese Karte spricht von Grenzen, die schützen, und von der Kraft, die du nach vielen Prüfungen gesammelt hast.",
+kern:"Hier verteidigt kein müder Kämpfer seinen Platz. Dein Deck zeigt die Neun als Schutzkreis: Die Stäbe bilden einen Stern um einen hellen Kern. Was in der Mitte ist, bleibt sicher. Diese Karte spricht von Grenzen, die schützen, und von der Kraft, die du nach vielen Prüfungen gesammelt hast.",
 licht:"Widerstandskraft, Schutz, gesunde Grenzen, Ausdauer kurz vor dem Ziel.",
 schatten:"Misstrauen, das alle fernhält. Oder Erschöpfung, die dich aufgeben lassen will.",
 frage:"Was in dir verdient einen Schutzkreis?",
